@@ -3,7 +3,14 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+// --- Início da Configuração da Base de Dados ---
 
+// 1. Adicionar a ligação à Base de Dados Marketplace
+var marketplaceConnectionString = builder.Configuration.GetConnectionString("MarketplaceConnection");
+builder.Services.AddDbContext<MarketplaceVeiculos.Data.MarketplaceContext>(options =>
+    options.UseSqlServer(marketplaceConnectionString));
+
+// --- Fim da Configuração da Base de Dados ---
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
