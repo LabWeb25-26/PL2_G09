@@ -1,0 +1,64 @@
+﻿@model MarketplaceVeiculos.Models.Carro
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1>Edit</h1>
+
+<h4>Carro</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="id_carro" />
+            <div class="form-group">
+                <label asp-for="VIN" class="control-label"></label>
+                <input asp-for="VIN" class="form-control" />
+                <span asp-validation-for="VIN" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="matricula" class="control-label"></label>
+                <input asp-for="matricula" class="form-control" />
+                <span asp-validation-for="matricula" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ano" class="control-label"></label>
+                <input asp-for="ano" class="form-control" />
+                <span asp-validation-for="ano" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="quilometragem" class="control-label"></label>
+                <input asp-for="quilometragem" class="form-control" />
+                <span asp-validation-for="quilometragem" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="caixa" class="control-label"></label>
+                <input asp-for="caixa" class="form-control" />
+                <span asp-validation-for="caixa" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="id_modelo" class="control-label"></label>
+                <select asp-for="id_modelo" class="form-control" asp-items="ViewBag.id_modelo"></select>
+                <span asp-validation-for="id_modelo" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="id_combustivel" class="control-label"></label>
+                <select asp-for="id_combustivel" class="form-control" asp-items="ViewBag.id_combustivel"></select>
+                <span asp-validation-for="id_combustivel" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

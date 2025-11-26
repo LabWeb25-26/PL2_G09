@@ -1,0 +1,71 @@
+﻿@model IEnumerable<Dcar.Models.Vendedor>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.UserId)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Nome)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Morada)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Contactos)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Tipo)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Nif)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.EstadoAprovacao)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.UserId)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Nome)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Morada)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Contactos)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Tipo)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Nif)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.EstadoAprovacao)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.IdVendedor">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.IdVendedor">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.IdVendedor">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
