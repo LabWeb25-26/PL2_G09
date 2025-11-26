@@ -2,7 +2,7 @@
 
 namespace MarketplaceVeiculos.Models
 {
-    [Table("Comprador")]
+    [Table("Comprador")] // <--- OBRIGATÓRIO: Aponta para a tabela singular
     public class Comprador : Utilizador
     {
         public string? morada { get; set; }

@@ -1,0 +1,97 @@
+﻿@model IEnumerable<Dcar.Models.Anuncio>
+
+@{
+    ViewData["Title"] = "Carros à Venda";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>🚗 Viaturas Disponíveis</h1>
+        <a asp-action="Create" class="btn btn-danger btn-lg">
+            <i class="bi bi-plus-circle"></i> Vender o meu Carro
+        </a>
+    </div>
+
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        @foreach (var item in Model)
+        {
+            <div class="col">
+                <div class="card h-100 shadow-sm border-0 hover-effect">
+
+                    <div style="height: 220px; overflow: hidden; background-color: #f0f0f0; position: relative;">
+                        <a asp-action="Details" asp-route-id="@item.IdAnuncio">
+                            @if (!string.IsNullOrEmpty(item.Fotos))
+                            {
+                                <img src="@item.Fotos" class="card-img-top" alt="@item.Titulo" style="width: 100%; height: 100%; object-fit: cover;">
+                            }
+                            else
+                            {
+                                <div class="d-flex align-items-center justify-content-center h-100 text-muted">
+                                    <span>Sem Foto</span>
+                                </div>
+                            }
+                        </a>
+                        @if (item.Estado == "reservado")
+                        {
+                            <span class="badge bg-warning text-dark position-absolute top-0 end-0 m-2">Reservado</span>
+                        }
+                        else if (item.Estado == "vendido")
+                        {
+                            <span class="badge bg-danger position-absolute top-0 end-0 m-2">Vendido</span>
+                        }
+                    </div>
+
+                    <div class="card-body">
+                        <h5 class="card-title text-truncate">
+                            <a asp-action="Details" asp-route-id="@item.IdAnuncio" class="text-decoration-none text-dark fw-bold">
+                                @item.Titulo
+                            </a>
+                        </h5>
+                        <p class="card-text text-muted small mb-2">
+                            @item.IdCarroNavigation.IdModeloNavigation.NomeModelo • @item.Localizacao
+                        </p>
+
+                        <h4 class="text-danger fw-bold mb-3">
+                            @item.Preco.ToString("N0") €
+                        </h4>
+
+                        <div class="d-flex justify-content-between border-top pt-3 text-muted small">
+                            <span>📅 @item.IdCarroNavigation.Ano</span>
+                            <span>⛽ @item.IdCarroNavigation.IdCombustivelNavigation.Tipo</span>
+                            <span>⚙️ @item.IdCarroNavigation.Caixa</span>
+                        </div>
+                    </div>
+
+                    <div class="card-footer bg-white border-top-0 d-grid gap-2">
+                        <a asp-action="Details" asp-route-id="@item.IdAnuncio" class="btn btn-outline-dark btn-sm">Ver Detalhes</a>
+
+                        <div class="btn-group">
+                            <a asp-action="Edit" asp-route-id="@item.IdAnuncio" class="btn btn-sm btn-light text-muted">Editar</a>
+                            <a asp-action="Delete" asp-route-id="@item.IdAnuncio" class="btn btn-sm btn-light text-danger">Apagar</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-secondary text-center mt-5 p-5">
+            <h3>Ainda não há carros publicados.</h3>
+            <p>Seja o primeiro a anunciar!</p>
+            <a asp-action="Create" class="btn btn-primary mt-3">Criar Anúncio</a>
+        </div>
+    }
+</div>
+
+<style>
+    .hover-effect {
+        transition: transform 0.2s;
+    }
+
+        .hover-effect:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+        }
+</style>
