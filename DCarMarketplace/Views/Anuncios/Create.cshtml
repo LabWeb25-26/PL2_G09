@@ -1,0 +1,98 @@
+﻿@model DCarMarketplace.Models.ViewModels.CriarAnuncioViewModel
+
+@{
+    ViewData["Title"] = "Criar Anúncio";
+}
+
+<h2>Vender o meu Carro</h2>
+<hr />
+
+<div class="row">
+    <div class="col-md-8">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <h4 class="mb-3">1. Detalhes do Anúncio</h4>
+            <div class="form-group mb-3">
+                <label asp-for="Titulo" class="control-label">Título do Anúncio</label>
+                <input asp-for="Titulo" class="form-control" placeholder="Ex: BMW Série 3 Impecável" />
+                <span asp-validation-for="Titulo" class="text-danger"></span>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col">
+                    <label asp-for="Preco" class="control-label">Preço (€)</label>
+                    <input asp-for="Preco" class="form-control" />
+                    <span asp-validation-for="Preco" class="text-danger"></span>
+                </div>
+                <div class="col">
+                    <label asp-for="Localizacao" class="control-label">Localização</label>
+                    <input asp-for="Localizacao" class="form-control" />
+                    <span asp-validation-for="Localizacao" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Descricao" class="control-label">Descrição Detalhada</label>
+                <textarea asp-for="Descricao" class="form-control" rows="4"></textarea>
+                <span asp-validation-for="Descricao" class="text-danger"></span>
+            </div>
+
+            <hr />
+
+            <h4 class="mb-3">2. Dados do Veículo</h4>
+
+            <div class="row mb-3">
+                <div class="col">
+                    <label class="control-label">Marca</label>
+                    <select asp-for="MarcaId" class="form-control" asp-items="ViewBag.MarcaId"></select>
+                </div>
+                <div class="col">
+                    <label class="control-label">Modelo</label>
+                    <select asp-for="ModeloId" class="form-control" asp-items="ViewBag.ModeloId"></select>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col">
+                    <label asp-for="Matricula" class="control-label"></label>
+                    <input asp-for="Matricula" class="form-control" />
+                    <span asp-validation-for="Matricula" class="text-danger"></span>
+                </div>
+                <div class="col">
+                    <label asp-for="Ano" class="control-label"></label>
+                    <input asp-for="Ano" class="form-control" />
+                    <span asp-validation-for="Ano" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col">
+                    <label class="control-label">Combustível</label>
+                    <select asp-for="CombustivelId" class="form-control" asp-items="ViewBag.CombustivelId"></select>
+                </div>
+                <div class="col">
+                    <label asp-for="Quilometragem" class="control-label">Km</label>
+                    <input asp-for="Quilometragem" class="form-control" />
+                </div>
+                <div class="col">
+                    <label asp-for="Caixa" class="control-label">Caixa</label>
+                    <select asp-for="Caixa" class="form-control">
+                        <option value="Manual">Manual</option>
+                        <option value="Automática">Automática</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group mt-4">
+                <input type="submit" value="Publicar Anúncio" class="btn btn-primary btn-lg w-100" />
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
