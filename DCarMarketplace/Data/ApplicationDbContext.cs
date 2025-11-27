@@ -33,6 +33,9 @@ namespace DCarMarketplace.Data
         public DbSet<MarcaFavorita> MarcasFavoritas { get; set; }
         public DbSet<HistoricoAcaoAdmin> HistoricoAcoesAdmin { get; set; }
 
+        // NOVO: Tabela de Favoritos (Corações)
+        public DbSet<AnuncioFavorito> AnunciosFavoritos { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -61,12 +64,10 @@ namespace DCarMarketplace.Data
                 .OnDelete(DeleteBehavior.Cascade);
 
             // =========================================================================
-            // B. CORREÇÃO DE CICLOS DE CASCATA (ERRO SQL 1785) - IMPORTANTE
+            // B. CORREÇÃO DE CICLOS DE CASCATA (ERRO SQL 1785)
             // =========================================================================
 
-            // Impede que apagar um Comprador tente apagar automaticamente Agendas/Reservas/Compras
-            // Isto resolve o conflito com a eliminação via Anúncio.
-
+            // 1. Agendas e Reservas
             builder.Entity<Agenda>()
                 .HasOne(a => a.Comprador)
                 .WithMany(c => c.VisitasAgendadas)
@@ -84,6 +85,20 @@ namespace DCarMarketplace.Data
                 .WithMany(c => c.Compras)
                 .HasForeignKey(c => c.CompradorId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // 2. Favoritos (NOVA CORREÇÃO)
+            // Impede que apagar um Utilizador tente apagar favoritos de duas formas diferentes
+            builder.Entity<AnuncioFavorito>()
+                .HasOne(f => f.Utilizador)
+                .WithMany()
+                .HasForeignKey(f => f.UtilizadorId)
+                .OnDelete(DeleteBehavior.Restrict); // <--- IMPORTANTE
+
+            builder.Entity<AnuncioFavorito>()
+                .HasOne(f => f.Anuncio)
+                .WithMany()
+                .HasForeignKey(f => f.AnuncioId)
+                .OnDelete(DeleteBehavior.Restrict); // <--- IMPORTANTE
 
             // =========================================================================
             // C. CHAVES COMPOSTAS E ÍNDICES ÚNICOS

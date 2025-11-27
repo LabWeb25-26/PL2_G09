@@ -1,8 +1,190 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model IEnumerable<DCarMarketplace.Models.Anuncio>
+
+@{
+    ViewData["Title"] = "Home";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="hero-section">
+    <div class="container h-100">
+        <div class="row h-100 align-items-center">
+            <div class="col-md-7 col-lg-6">
+
+                <div class="search-card shadow-lg p-4 bg-white rounded-4">
+                    <form asp-controller="Anuncios" asp-action="Index" method="get">
+
+                        <div class="row g-2 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-muted ms-1">Marca</label>
+
+                                <select name="marca" id="searchMarca" class="form-select custom-select py-2">
+                                    <option value="">Todas as Marcas</option>
+                                    @if (ViewBag.ListaMarcas != null)
+                                    {
+                                        foreach (var marca in ViewBag.ListaMarcas)
+                                        {
+                                            <option value="@marca.Nome">@marca.Nome</option>
+                                        }
+                                    }
+                                </select>
+
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-muted ms-1">Modelo</label>
+                                <select name="modelo" id="searchModelo" class="form-select custom-select py-2 bg-light text-muted" disabled>
+                                    <option value="">Selecione a Marca</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row g-2 mb-4">
+                            <div class="col-6 col-md-3">
+                                <label class="form-label small fw-bold text-muted ms-1">Preço até</label>
+                                <select class="form-select custom-select py-2 text-truncate">
+                                    <option>Qualquer</option>
+                                    <option>10.000€</option>
+                                    <option>20.000€</option>
+                                    <option>50.000€</option>
+                                </select>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <label class="form-label small fw-bold text-muted ms-1">Ano de</label>
+                                <select class="form-select custom-select py-2 text-truncate">
+                                    <option>Qualquer</option>
+                                    <option>2020</option>
+                                    <option>2022</option>
+                                </select>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <label class="form-label small fw-bold text-muted ms-1">Segmento</label>
+                                <select class="form-select custom-select py-2 text-truncate">
+                                    <option>Todos</option>
+                                    <option>SUV</option>
+                                    <option>Sedan</option>
+                                </select>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <label class="form-label small fw-bold text-muted ms-1">Combus</label>
+                                <select class="form-select custom-select py-2 text-truncate">
+                                    <option>Todos</option>
+                                    <option>Diesel</option>
+                                    <option>Gasolina</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <a href="#" class="text-dark small text-decoration-none d-flex align-items-center gap-2">
+                                <i class="bi bi-sliders"></i> Pesquisa avançada
+                            </a>
+                            <button type="submit" id="btnVerAnuncios" class="btn btn-dcar px-5 py-2 fw-bold w-auto" style="border-radius: 8px;">
+                                Ver @(Model != null ? Model.Count() : 0) Anúncios
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
 </div>
+
+<div class="container mt-5 mb-5">
+    <div class="text-center mb-5">
+        <span class="badge bg-primary rounded-pill px-3 py-2 mb-2" style="background-color: #6610f2 !important;">Em Destaque</span>
+        <h2 class="fw-bold">Veículos em Destaque</h2>
+        <p class="text-muted">Descubra as melhores ofertas verificadas pelos nossos especialistas</p>
+    </div>
+
+    <div class="row">
+        @if (Model != null)
+        {
+            foreach (var item in Model)
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 border-0 shadow-sm car-card">
+                        <div style="height: 200px; overflow: hidden; position: relative;">
+                            @if (!string.IsNullOrEmpty(item.Fotos))
+                            {
+                                var primeiraFoto = item.Fotos.Split(';', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+                                if (!string.IsNullOrEmpty(primeiraFoto))
+                                {
+                                    <img src="~/imagens_carros/@primeiraFoto" class="card-img-top h-100 w-100" style="object-fit: cover;" />
+                                }
+                                else
+                                {
+                                    <div class="bg-light h-100 w-100 d-flex align-items-center justify-content-center text-muted"><i class="bi bi-camera-fill fs-1"></i></div>
+                                }
+                            }
+                            else
+                            {
+                                <div class="bg-light h-100 w-100 d-flex align-items-center justify-content-center text-muted"><i class="bi bi-camera-fill fs-1"></i></div>
+                            }
+                            <span class="badge bg-primary position-absolute top-0 end-0 m-3" style="background-color: #6610f2 !important;">Destaque</span>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold text-truncate">@item.Titulo</h5>
+                            <h4 class="text-danger fw-bold mb-3">@item.Preco.ToString("C0")</h4>
+
+                            <div class="d-flex justify-content-between text-muted small">
+                                <span><i class="bi bi-calendar"></i> @(item.Carro?.Ano)</span>
+                                <span><i class="bi bi-speedometer2"></i> @(item.Carro?.Quilometragem) km</span>
+                                <span><i class="bi bi-fuel-pump"></i> @(item.Carro?.Combustivel?.Tipo)</span>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-white border-0 pb-3 text-center">
+                            <a asp-controller="Anuncios" asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-danger w-100">Ver Detalhes</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Atualizar Contagem
+            function atualizarContagem() {
+                var marca = $("#searchMarca").val();
+                var modelo = $("#searchModelo").val();
+                if (modelo === "Modelo") modelo = "";
+
+                $.getJSON("/Anuncios/GetContagemAnuncios", { marca: marca, modelo: modelo }, function (total) {
+                    $("#btnVerAnuncios").text("Ver " + total + " Anúncios");
+                });
+            }
+            atualizarContagem();
+
+            // Quando a Marca muda
+            $("#searchMarca").change(function () {
+                var marcaSelecionada = $(this).val();
+                var dropdownModelo = $("#searchModelo");
+                dropdownModelo.empty();
+
+                if (marcaSelecionada) {
+                    dropdownModelo.append('<option value="">A carregar...</option>');
+                    $.getJSON("/Anuncios/GetModelosByMarca", { nomeMarca: marcaSelecionada }, function (dados) {
+                        dropdownModelo.empty();
+                        dropdownModelo.append('<option value="">Modelo</option>');
+                        $.each(dados, function (index, item) {
+                            dropdownModelo.append('<option value="' + item.nome + '">' + item.nome + '</option>');
+                        });
+                        dropdownModelo.prop("disabled", false);
+                        dropdownModelo.removeClass("bg-light text-muted");
+                    });
+                } else {
+                    dropdownModelo.append('<option value="">Selecione a Marca</option>');
+                    dropdownModelo.prop("disabled", true);
+                    dropdownModelo.addClass("bg-light text-muted");
+                }
+                atualizarContagem();
+            });
+
+            // Quando o Modelo muda
+            $("#searchModelo").change(function () {
+                atualizarContagem();
+            });
+        });
+    </script>
+}

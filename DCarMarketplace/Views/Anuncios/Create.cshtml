@@ -1,93 +1,151 @@
 ﻿@model DCarMarketplace.Models.ViewModels.CriarAnuncioViewModel
 
 @{
-    ViewData["Title"] = "Criar Anúncio";
+    ViewData["Title"] = "Vender Carro";
 }
 
-<h2>Vender o meu Carro</h2>
-<hr />
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
 
-<div class="row">
-    <div class="col-md-8">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-header bg-white border-0 pt-4 pb-0 text-center">
+                    <h2 class="fw-bold text-dark">Vender o meu Carro</h2>
+                    <p class="text-muted">Preencha os detalhes abaixo para publicar o seu anúncio.</p>
+                </div>
 
-            <h4 class="mb-3">1. Detalhes do Anúncio</h4>
-            <div class="form-group mb-3">
-                <label asp-for="Titulo" class="control-label">Título do Anúncio</label>
-                <input asp-for="Titulo" class="form-control" placeholder="Ex: BMW Série 3 Impecável" />
-                <span asp-validation-for="Titulo" class="text-danger"></span>
+                <div class="card-body p-5">
+                    <form asp-action="Create" enctype="multipart/form-data">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                        <h5 class="fw-bold text-danger mb-3"><i class="bi bi-camera-fill me-2"></i>Fotografias</h5>
+
+                        <div class="mb-5">
+                            <div class="upload-container position-relative">
+                                <i class="bi bi-cloud-arrow-up upload-icon"></i>
+                                <h5 class="fw-bold">Clique ou arraste fotos para aqui</h5>
+                                <p class="text-muted small mb-0">Suporta JPG, PNG. Máximo 9 imagens.</p>
+
+                                <input asp-for="ImagensFicheiros" class="upload-input" type="file" multiple accept="image/*" id="fileInput" />
+                            </div>
+
+                            <div class="image-preview-grid mt-3" id="previewArea"></div>
+                            <span asp-validation-for="ImagensFicheiros" class="text-danger d-block mt-2"></span>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <h5 class="fw-bold text-danger mb-3"><i class="bi bi-car-front-fill me-2"></i>Dados do Veículo</h5>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <select asp-for="MarcaId" id="ddlMarca" class="form-select" asp-items="ViewBag.MarcaId">
+                                        <option value="">Selecione...</option>
+                                    </select>
+                                    <label asp-for="MarcaId">Marca</label>
+                                </div>
+                                <span asp-validation-for="MarcaId" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <select asp-for="ModeloId" id="ddlModelo" class="form-select" disabled>
+                                        <option value="">Selecione a Marca primeiro</option>
+                                    </select>
+                                    <label asp-for="ModeloId">Modelo</label>
+                                </div>
+                                <span asp-validation-for="ModeloId" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <select asp-for="CombustivelId" class="form-select" asp-items="ViewBag.CombustivelId"></select>
+                                    <label asp-for="CombustivelId">Combustível</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <select asp-for="Caixa" class="form-select">
+                                        <option value="Manual">Manual</option>
+                                        <option value="Automática">Automática</option>
+                                    </select>
+                                    <label asp-for="Caixa">Caixa</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <select asp-for="Ano" class="form-select" asp-items="ViewBag.ListaAnos">
+                                        <option value="">Ano</option>
+                                    </select>
+                                    <label asp-for="Ano">Ano</label>
+                                </div>
+                                <span asp-validation-for="Ano" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input asp-for="Quilometragem" class="form-control" type="number" placeholder="0" min="0" />
+                                    <label asp-for="Quilometragem">Quilómetros</label>
+                                </div>
+                                <span asp-validation-for="Quilometragem" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input asp-for="Matricula" class="form-control" placeholder="AA-00-BB" style="text-transform: uppercase;" />
+                                    <label asp-for="Matricula">Matrícula</label>
+                                </div>
+                                <span asp-validation-for="Matricula" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <h5 class="fw-bold text-danger mb-3"><i class="bi bi-tag-fill me-2"></i>Detalhes do Anúncio</h5>
+
+                        <div class="form-floating mb-3">
+                            <input asp-for="Titulo" class="form-control" placeholder="Título" />
+                            <label asp-for="Titulo">Título do Anúncio (ex: Vendo BMW X5 Pack M)</label>
+                            <span asp-validation-for="Titulo" class="text-danger small"></span>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input asp-for="Preco" class="form-control" type="number" step="0.01" placeholder="0" min="0" />
+                                    <label asp-for="Preco">Preço (€)</label>
+                                </div>
+                                <span asp-validation-for="Preco" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input asp-for="Localizacao" class="form-control" placeholder="Lisboa" />
+                                    <label asp-for="Localizacao">Localização</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-floating mb-4">
+                            <textarea asp-for="Descricao" class="form-control" style="height: 120px" placeholder="Descrição"></textarea>
+                            <label asp-for="Descricao">Descrição Detalhada (Mín. 30 caracteres)</label>
+                            <span asp-validation-for="Descricao" class="text-danger small"></span>
+                        </div>
+
+                        <div class="d-grid gap-2 mt-5">
+                            <button type="submit" class="btn btn-dcar btn-lg py-3 fw-bold shadow-sm">
+                                <i class="bi bi-check-circle me-2"></i> PUBLICAR ANÚNCIO
+                            </button>
+                            <a asp-action="MeusAnuncios" class="btn btn-outline-secondary py-2">Cancelar</a>
+                        </div>
+
+                    </form>
+                </div>
             </div>
 
-            <div class="row mb-3">
-                <div class="col">
-                    <label asp-for="Preco" class="control-label">Preço (€)</label>
-                    <input asp-for="Preco" class="form-control" />
-                    <span asp-validation-for="Preco" class="text-danger"></span>
-                </div>
-                <div class="col">
-                    <label asp-for="Localizacao" class="control-label">Localização</label>
-                    <input asp-for="Localizacao" class="form-control" />
-                    <span asp-validation-for="Localizacao" class="text-danger"></span>
-                </div>
-            </div>
-
-            <div class="form-group mb-3">
-                <label asp-for="Descricao" class="control-label">Descrição Detalhada</label>
-                <textarea asp-for="Descricao" class="form-control" rows="4"></textarea>
-                <span asp-validation-for="Descricao" class="text-danger"></span>
-            </div>
-
-            <hr />
-
-            <h4 class="mb-3">2. Dados do Veículo</h4>
-
-            <div class="row mb-3">
-                <div class="col">
-                    <label class="control-label">Marca</label>
-                    <select asp-for="MarcaId" class="form-control" asp-items="ViewBag.MarcaId"></select>
-                </div>
-                <div class="col">
-                    <label class="control-label">Modelo</label>
-                    <select asp-for="ModeloId" class="form-control" asp-items="ViewBag.ModeloId"></select>
-                </div>
-            </div>
-
-            <div class="row mb-3">
-                <div class="col">
-                    <label asp-for="Matricula" class="control-label"></label>
-                    <input asp-for="Matricula" class="form-control" />
-                    <span asp-validation-for="Matricula" class="text-danger"></span>
-                </div>
-                <div class="col">
-                    <label asp-for="Ano" class="control-label"></label>
-                    <input asp-for="Ano" class="form-control" />
-                    <span asp-validation-for="Ano" class="text-danger"></span>
-                </div>
-            </div>
-
-            <div class="row mb-3">
-                <div class="col">
-                    <label class="control-label">Combustível</label>
-                    <select asp-for="CombustivelId" class="form-control" asp-items="ViewBag.CombustivelId"></select>
-                </div>
-                <div class="col">
-                    <label asp-for="Quilometragem" class="control-label">Km</label>
-                    <input asp-for="Quilometragem" class="form-control" />
-                </div>
-                <div class="col">
-                    <label asp-for="Caixa" class="control-label">Caixa</label>
-                    <select asp-for="Caixa" class="form-control">
-                        <option value="Manual">Manual</option>
-                        <option value="Automática">Automática</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="form-group mt-4">
-                <input type="submit" value="Publicar Anúncio" class="btn btn-primary btn-lg w-100" />
-            </div>
-        </form>
+        </div>
     </div>
 </div>
 
@@ -95,4 +153,91 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+
+    <script>
+        $(document).ready(function () {
+
+            // --- 1. LÓGICA DE ACUMULAR FOTOS ---
+            const dt = new DataTransfer(); // Armazém virtual de ficheiros
+            const input = document.getElementById('fileInput');
+            const previewArea = $("#previewArea");
+
+            function handleFiles(files) {
+                // Verificar limite total (existentes + novos)
+                if (dt.items.length + files.length > 9) {
+                    alert("Atingiu o limite máximo de 9 imagens. Algumas imagens foram ignoradas.");
+                }
+
+                // Loop pelos novos ficheiros
+                for (let i = 0; i < files.length; i++) {
+                    if (dt.items.length >= 9) break; // Para se chegar aos 9
+
+                    const file = files[i];
+
+                    // Adicionar ao DataTransfer
+                    dt.items.add(file);
+
+                    // Criar preview
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const img = $('<img>').attr('src', e.target.result).addClass('preview-img');
+                        previewArea.append(img);
+                    }
+                    reader.readAsDataURL(file);
+                }
+
+                // ATUALIZAR O INPUT REAL
+                input.files = dt.files;
+            }
+
+            // Seleção manual (Botão)
+            $("#fileInput").change(function() {
+                handleFiles(this.files);
+            });
+
+            // Drag & Drop
+            const dropZone = $(".upload-container");
+
+            dropZone.on('dragover', function(e) {
+                e.preventDefault();
+                $(this).css('background-color', '#fff0f0').css('border-color', '#D92323');
+            });
+
+            dropZone.on('dragleave', function(e) {
+                e.preventDefault();
+                $(this).css('background-color', '#f9f9f9').css('border-color', '#ccc');
+            });
+
+            dropZone.on('drop', function(e) {
+                e.preventDefault();
+                $(this).css('background-color', '#f9f9f9').css('border-color', '#ccc');
+                if(e.originalEvent.dataTransfer && e.originalEvent.dataTransfer.files.length > 0) {
+                    handleFiles(e.originalEvent.dataTransfer.files);
+                }
+            });
+
+
+            // --- 2. LÓGICA DE MODELOS (AJAX) ---
+            $("#ddlMarca").change(function () {
+                var marcaId = $(this).val();
+                var dropdownModelo = $("#ddlModelo");
+                dropdownModelo.empty();
+
+                if (marcaId) {
+                    dropdownModelo.append('<option value="">Carregando...</option>');
+                    $.getJSON("/Anuncios/GetModelosByMarcaId", { marcaId: marcaId }, function (dados) {
+                        dropdownModelo.empty();
+                        dropdownModelo.append('<option value="">-- Selecione o Modelo --</option>');
+                        $.each(dados, function (index, item) {
+                            dropdownModelo.append('<option value="' + item.id + '">' + item.nome + '</option>');
+                        });
+                        dropdownModelo.prop("disabled", false);
+                    });
+                } else {
+                    dropdownModelo.append('<option value="">Selecione a Marca primeiro</option>');
+                    dropdownModelo.prop("disabled", true);
+                }
+            });
+        });
+    </script>
 }
