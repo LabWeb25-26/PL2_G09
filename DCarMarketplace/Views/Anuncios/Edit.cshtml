@@ -1,79 +1,223 @@
-﻿@model DCarMarketplace.Models.Anuncio
+﻿@model DCarMarketplace.Models.ViewModels.EditarAnuncioViewModel
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Editar Anúncio";
+    var fotosAtuais = Model.FotosAtuais?.Split(';', StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
 }
 
-<h1>Edit</h1>
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-12">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-header bg-white border-0 pt-4 pb-0">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3 class="fw-bold text-dark mb-0">Editar Anúncio</h3>
+                        <span class="badge bg-light text-dark border">ID: @Model.Id</span>
+                    </div>
+                </div>
 
-<h4>Anuncio</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Id" />
-            <div class="form-group">
-                <label asp-for="VendedorId" class="control-label"></label>
-                <select asp-for="VendedorId" class="form-control" asp-items="ViewBag.VendedorId"></select>
-                <span asp-validation-for="VendedorId" class="text-danger"></span>
+                <div class="card-body p-5">
+                    <form asp-action="Edit" enctype="multipart/form-data">
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="FotosAtuais" />
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <h5 class="fw-bold text-danger mb-3"><i class="bi bi-images me-2"></i>Galeria Atual</h5>
+
+                        <div class="d-flex gap-3 flex-wrap mb-4 bg-light p-3 rounded border" id="areaFotosAtuais">
+                            @if (fotosAtuais.Length > 0)
+                            {
+                                foreach (var foto in fotosAtuais)
+                                {
+                                    <div class="position-relative d-inline-block" id="foto-container-@foto.GetHashCode()">
+                                        <img src="~/imagens_carros/@foto" style="height: 100px; width: 150px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd;" />
+                                        <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 m-1 rounded-circle d-flex align-items-center justify-content-center"
+                                                style="width: 24px; height: 24px; padding: 0;"
+                                                onclick="removerFotoExistente(@Model.Id, '@foto', 'foto-container-@foto.GetHashCode()')">
+                                            <i class="bi bi-x"></i>
+                                        </button>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <span class="text-muted small fst-italic align-self-center">Sem fotografias carregadas.</span>
+                            }
+                        </div>
+
+                        <div class="mb-5">
+                            <label class="form-label fw-bold">Adicionar Mais Fotos</label>
+                            <div class="upload-container position-relative">
+                                <i class="bi bi-cloud-plus upload-icon"></i>
+                                <h6 class="fw-bold">Carregar novas imagens</h6>
+                                <input asp-for="NovasFotos" class="upload-input" type="file" multiple accept="image/*" id="fileInputNew" />
+                            </div>
+                            <div class="image-preview-grid mt-2" id="previewAreaNew"></div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <h5 class="fw-bold text-danger mb-3"><i class="bi bi-car-front-fill me-2"></i>Dados do Veículo</h5>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <select asp-for="MarcaId" id="ddlMarca" class="form-select" asp-items="ViewBag.MarcaId"></select>
+                                    <label>Marca</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <select asp-for="ModeloId" id="ddlModelo" class="form-select" asp-items="ViewBag.ModeloId"></select>
+                                    <label>Modelo</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <select asp-for="CombustivelId" class="form-select" asp-items="ViewBag.CombustivelId"></select>
+                                    <label>Combustível</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <select asp-for="Caixa" class="form-select">
+                                        <option value="Manual">Manual</option>
+                                        <option value="Automática">Automática</option>
+                                    </select>
+                                    <label>Caixa</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <select asp-for="Ano" class="form-select" asp-items="ViewBag.ListaAnos"></select>
+                                    <label>Ano</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-4">
+                                <div class="form-floating"><input asp-for="Cor" class="form-control" /><label>Cor</label></div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <select asp-for="NumeroPortas" class="form-select">
+                                        <option value="2">2/3 Portas</option>
+                                        <option value="4">4/5 Portas</option>
+                                    </select>
+                                    <label>Nº Portas</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <select asp-for="Segmento" class="form-select">
+                                        <option value="Citadino">Citadino</option>
+                                        <option value="Sedan">Sedan</option>
+                                        <option value="SUV">SUV</option>
+                                        <option value="Comercial">Comercial</option>
+                                        <option value="Desportivo">Desportivo</option>
+                                        <option value="Cabrio">Cabrio</option>
+                                        <option value="Coupe">Coupe</option>
+                                    </select>
+                                    <label>Categoria</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <div class="form-floating"><input asp-for="Potencia" class="form-control" /><label>Potência (cv)</label></div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating"><input asp-for="Cilindrada" class="form-control" /><label>Cilindrada (cm3)</label></div>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <div class="form-floating"><input asp-for="Quilometragem" class="form-control" /><label>Quilómetros</label></div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-floating"><input asp-for="Matricula" class="form-control" style="text-transform: uppercase;" /><label>Matrícula</label></div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-floating"><input asp-for="VIN" class="form-control" style="text-transform: uppercase;" maxlength="17" /><label>VIN</label></div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <h5 class="fw-bold text-danger mb-3"><i class="bi bi-tag-fill me-2"></i>Detalhes</h5>
+                        <div class="form-floating mb-3">
+                            <input asp-for="Titulo" class="form-control" />
+                            <label>Título do Anúncio</label>
+                        </div>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <div class="form-floating"><input asp-for="Preco" class="form-control" type="number" step="0.01" /><label>Preço (€)</label></div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating"><input asp-for="Localizacao" class="form-control" /><label>Localização</label></div>
+                            </div>
+                        </div>
+                        <div class="form-floating mb-4">
+                            <textarea asp-for="Descricao" class="form-control" style="height: 150px"></textarea>
+                            <label>Descrição</label>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a asp-action="MeusAnuncios" class="btn btn-outline-secondary px-4 py-2">Cancelar</a>
+                            <button type="submit" class="btn btn-warning fw-bold text-white px-5 py-2">Guardar Alterações</button>
+                        </div>
+                    </form>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="CarroId" class="control-label"></label>
-                <select asp-for="CarroId" class="form-control" asp-items="ViewBag.CarroId"></select>
-                <span asp-validation-for="CarroId" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Titulo" class="control-label"></label>
-                <input asp-for="Titulo" class="form-control" />
-                <span asp-validation-for="Titulo" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Descricao" class="control-label"></label>
-                <input asp-for="Descricao" class="form-control" />
-                <span asp-validation-for="Descricao" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="DataInicio" class="control-label"></label>
-                <input asp-for="DataInicio" class="form-control" />
-                <span asp-validation-for="DataInicio" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="DataFim" class="control-label"></label>
-                <input asp-for="DataFim" class="form-control" />
-                <span asp-validation-for="DataFim" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Localizacao" class="control-label"></label>
-                <input asp-for="Localizacao" class="form-control" />
-                <span asp-validation-for="Localizacao" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Preco" class="control-label"></label>
-                <input asp-for="Preco" class="form-control" />
-                <span asp-validation-for="Preco" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Estado" class="control-label"></label>
-                <input asp-for="Estado" class="form-control" />
-                <span asp-validation-for="Estado" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Fotos" class="control-label"></label>
-                <input asp-for="Fotos" class="form-control" />
-                <span asp-validation-for="Fotos" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
-            </div>
-        </form>
+        </div>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
-
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        // Remover Foto Existente
+        function removerFotoExistente(anuncioId, nomeFoto, containerId) {
+            if(!confirm("Remover esta foto?")) return;
+            $.post("/Anuncios/RemoverFotoExistente", { id: anuncioId, nomeFoto: nomeFoto }, function(data) {
+                if (data.success) { $("#" + containerId).fadeOut(300, function() { $(this).remove(); }); }
+            });
+        }
+
+        // Preview Novas Fotos
+        $(document).ready(function () {
+            $("#fileInputNew").change(function() {
+                var previewArea = $("#previewAreaNew");
+                previewArea.empty();
+                for(let i=0; i<this.files.length; i++) {
+                    let reader = new FileReader();
+                    reader.onload = function(e) { previewArea.append($('<img>').attr('src', e.target.result).addClass('preview-img')); }
+                    reader.readAsDataURL(this.files[i]);
+                }
+            });
+
+            // AJAX Marca/Modelo
+             $("#ddlMarca").change(function () {
+                var id = $(this).val();
+                var ddl = $("#ddlModelo");
+                ddl.empty();
+                if(id) {
+                    ddl.append('<option>Carregando...</option>');
+                    $.getJSON("/Anuncios/GetModelosByMarcaId", { marcaId: id }, function(d) {
+                        ddl.empty().append('<option value="">Selecione...</option>');
+                        $.each(d, function(i, item) { ddl.append('<option value="'+item.id+'">'+item.nome+'</option>'); });
+                    });
+                }
+            });
+        });
+    </script>
 }

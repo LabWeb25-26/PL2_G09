@@ -2,36 +2,36 @@
 
 @{
     ViewData["Title"] = Model.Titulo;
-
-    // --- LÓGICA CRÍTICA: ISTO TEM DE ESTAR AQUI PARA O CARROSSEL FUNCIONAR ---
-    // 1. Separa as fotos por ponto e vírgula
-    // 2. Se for nulo, cria uma lista vazia para não dar erro
+    // Lógica para separar as imagens
     var listaImagens = Model.Fotos?.Split(';', StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
 }
 
 <div class="container mt-5 mb-5">
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <a asp-action="Index" class="text-decoration-none text-muted fw-bold">
-            <i class="bi bi-arrow-left"></i> Voltar aos resultados
-        </a>
-        <span class="badge bg-light text-dark border px-3 py-2">Referência: #@Model.Id</span>
-    </div>
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb bg-transparent p-0">
+            <li class="breadcrumb-item">
+                <a asp-action="Index" class="text-decoration-none text-muted">
+                    <i class="bi bi-arrow-left"></i> Voltar aos resultados
+                </a>
+            </li>
+            <li class="breadcrumb-item text-dark fw-bold active" aria-current="page">@Model.Titulo</li>
+        </ol>
+    </nav>
 
     <div class="row">
 
         <div class="col-lg-8">
 
-            <div class="card border-0 rounded-4 overflow-hidden mb-4 bg-white shadow-sm">
-
+            <div class="card border-0 rounded-4 overflow-hidden mb-3 bg-black shadow-sm">
                 @if (listaImagens.Length > 0)
                 {
                     <div id="carroCarousel" class="carousel slide" data-bs-interval="false">
-                        <div class="carousel-inner" style="height: 500px; background-color: #f0f0f0;">
+                        <div class="carousel-inner" style="height: 500px; background-color: #000;">
                             @for (int i = 0; i < listaImagens.Length; i++)
                             {
-                                <div class="carousel-item @(i == 0 ? "active" : "") h-100">
-                                    <img src="~/imagens_carros/@listaImagens[i]" class="d-block w-100 h-100" style="object-fit: cover;" alt="Foto @i">
+                                <div class="carousel-item @(i == 0 ? "active" : "") h-100 text-center">
+                                    <img src="~/imagens_carros/@listaImagens[i]" class="h-100 w-auto mw-100" style="object-fit: contain;" alt="Foto @(i + 1)">
                                 </div>
                             }
                         </div>
@@ -39,12 +39,10 @@
                         @if (listaImagens.Length > 1)
                         {
                             <button class="carousel-control-prev" type="button" data-bs-target="#carroCarousel" data-bs-slide="prev">
-                                <span class="carousel-control-prev-icon bg-dark rounded-circle p-3" aria-hidden="true"></span>
-                                <span class="visually-hidden">Anterior</span>
+                                <span class="carousel-control-prev-icon bg-dark rounded-circle p-3 bg-opacity-50" aria-hidden="true"></span>
                             </button>
                             <button class="carousel-control-next" type="button" data-bs-target="#carroCarousel" data-bs-slide="next">
-                                <span class="carousel-control-next-icon bg-dark rounded-circle p-3" aria-hidden="true"></span>
-                                <span class="visually-hidden">Próximo</span>
+                                <span class="carousel-control-next-icon bg-dark rounded-circle p-3 bg-opacity-50" aria-hidden="true"></span>
                             </button>
                         }
                     </div>
@@ -54,7 +52,7 @@
                     <div class="d-flex align-items-center justify-content-center bg-light text-muted" style="height: 500px;">
                         <div class="text-center">
                             <i class="bi bi-camera-fill" style="font-size: 5rem;"></i>
-                            <p class="mt-2 fs-5">Sem imagens</p>
+                            <p class="mt-2">Sem fotos</p>
                         </div>
                     </div>
                 }
@@ -66,78 +64,224 @@
                     @for (int i = 0; i < listaImagens.Length; i++)
                     {
                         <img src="~/imagens_carros/@listaImagens[i]"
-                             class="rounded-3 border cursor-pointer opacity-75 hover-opacity-100"
-                             style="width: 100px; height: 70px; object-fit: cover; cursor: pointer; transition: 0.2s;"
-                             onclick="mudarSlide(@i)"
+                             class="rounded-3 border border-2 cursor-pointer opacity-75 hover-opacity-100"
+                             style="width: 100px; height: 70px; object-fit: cover; cursor: pointer; transition: all 0.2s;"
+                             onclick="mudarSlide(@i, this)"
                              alt="Miniatura @i">
                     }
                 </div>
             }
 
-            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
-                <h4 class="fw-bold mb-4">Descrição do Veículo</h4>
-                <p class="text-muted text-break" style="line-height: 1.8; white-space: pre-line;">
+            <div class="card border-0 shadow-sm rounded-4 p-5 mb-5">
+
+                <h3 class="fw-bold mb-4 text-dark">Descrição</h3>
+                <p class="text-muted text-break mb-5" style="line-height: 1.8; font-size: 1.05rem; white-space: pre-line;">
                     @Model.Descricao
                 </p>
+
+                <div class="details-section-header">
+                    <i class="bi bi-info-circle-fill text-primary"></i> Informações Gerais
+                </div>
+
+                <div class="detail-row">
+                    <span class="detail-label">Marca</span>
+                    <span class="detail-value">@Model.Carro.Modelo.Marca.Nome</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Modelo</span>
+                    <span class="detail-value">@Model.Carro.Modelo.Nome</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Ano de Registo</span>
+                    <span class="detail-value">@Model.Carro.Ano</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Segmento</span>
+                    <span class="detail-value">@Model.Carro.Segmento</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Cor</span>
+                    <span class="detail-value">@Model.Carro.Cor</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Localização</span>
+                    <span class="detail-value">@Model.Localizacao</span>
+                </div>
+
+                <div class="details-section-header mt-5">
+                    <i class="bi bi-gear-wide-connected text-danger"></i> Dados Técnicos
+                </div>
+
+                <div class="detail-row">
+                    <span class="detail-label">Quilómetros</span>
+                    <span class="detail-value">@Model.Carro.Quilometragem.ToString("N0") km</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Combustível</span>
+                    <span class="detail-value">@Model.Carro.Combustivel.Tipo</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Caixa de Velocidades</span>
+                    <span class="detail-value">@Model.Carro.Caixa</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Potência</span>
+                    <span class="detail-value">@Model.Carro.Potencia cv</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Cilindrada</span>
+                    <span class="detail-value">@Model.Carro.Cilindrada cm³</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Nº de Portas</span>
+                    <span class="detail-value">@Model.Carro.NumeroPortas</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">VIN (Nº Quadro)</span>
+                    <span class="detail-value text-uppercase">@(Model.Carro.VIN ?? "Não disponível")</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Referência Anúncio</span>
+                    <span class="detail-value">#@Model.Id</span>
+                </div>
+
             </div>
+
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
+                <div class="bg-light p-5 text-center" style="background: url('https://maps.googleapis.com/maps/api/staticmap?center=@Model.Localizacao&zoom=13&size=600x300&maptype=roadmap') no-repeat center/cover;">
+                    <div class="bg-white d-inline-block p-3 rounded-3 shadow-sm mt-4 mb-4">
+                        <i class="bi bi-geo-alt-fill text-danger"></i> <strong>@Model.Localizacao</strong>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
         <div class="col-lg-4">
-            <div class="price-card sticky-top" style="top: 20px; z-index: 1;">
+            <div class="price-card sticky-top" style="top: 20px; z-index: 10;">
 
-                <div class="border-bottom pb-3 mb-3">
-                    <h6 class="text-muted text-uppercase small ls-1">@Model.Carro.Modelo.Marca.Nome</h6>
+                <div class="mb-3">
+                    <h6 class="text-muted text-uppercase small fw-bold mb-1">@Model.Carro.Modelo.Marca.Nome</h6>
                     <h2 class="fw-bold mb-2">@Model.Carro.Modelo.Nome</h2>
-                    <h1 class="text-danger fw-bold mb-0">@Model.Preco.ToString("N0") €</h1>
+                    <div class="mt-3">
+                        <span class="display-5 fw-bold text-danger">@Model.Preco.ToString("N0") €</span>
+                    </div>
                 </div>
 
-                <div class="d-flex align-items-center mb-4">
-                    <div class="rounded-circle bg-dark text-white d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
-                        <i class="bi bi-person-fill fs-4"></i>
+                <hr class="text-muted opacity-25 mb-4">
+
+                <h6 class="fw-bold text-dark mb-3">Destaques</h6>
+                <div class="row g-3 text-center small mb-4">
+
+                    <div class="col-4">
+                        <div class="p-2 border rounded-3 bg-light h-100">
+                            <i class="bi bi-speedometer2 d-block fs-4 mb-1 text-danger"></i>
+                            <span class="d-block text-muted" style="font-size: 0.65rem;">QUILÓMETROS</span>
+                            <strong>@(Model.Carro.Quilometragem.ToString("N0"))</strong>
+                        </div>
+                    </div>
+
+                    <div class="col-4">
+                        <div class="p-2 border rounded-3 bg-light h-100">
+                            <i class="bi bi-fuel-pump d-block fs-4 mb-1 text-danger"></i>
+                            <span class="d-block text-muted" style="font-size: 0.65rem;">COMBUSTÍVEL</span>
+                            <strong>@Model.Carro.Combustivel.Tipo</strong>
+                        </div>
+                    </div>
+
+                    <div class="col-4">
+                        <div class="p-2 border rounded-3 bg-light h-100">
+                            <i class="bi bi-gear-wide d-block fs-4 mb-1 text-danger"></i>
+                            <span class="d-block text-muted" style="font-size: 0.65rem;">CAIXA</span>
+                            <strong>@Model.Carro.Caixa</strong>
+                        </div>
+                    </div>
+
+                    <div class="col-4">
+                        <div class="p-2 border rounded-3 bg-light h-100">
+                            <i class="bi bi-calendar3 d-block fs-4 mb-1 text-danger"></i>
+                            <span class="d-block text-muted" style="font-size: 0.65rem;">ANO</span>
+                            <strong>@Model.Carro.Ano</strong>
+                        </div>
+                    </div>
+
+                    <div class="col-4">
+                        <div class="p-2 border rounded-3 bg-light h-100">
+                            <i class="bi bi-lightning-charge d-block fs-4 mb-1 text-danger"></i>
+                            <span class="d-block text-muted" style="font-size: 0.65rem;">POTÊNCIA</span>
+                            <strong>@Model.Carro.Potencia cv</strong>
+                        </div>
+                    </div>
+
+                    <div class="col-4">
+                        <div class="p-2 border rounded-3 bg-light h-100">
+                            <i class="bi bi-gear d-block fs-4 mb-1 text-danger"></i>
+                            <span class="d-block text-muted" style="font-size: 0.65rem;">CILINDRADA</span>
+                            <strong>@Model.Carro.Cilindrada cm³</strong>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="p-2 border rounded-3 bg-light h-100 d-flex align-items-center justify-content-center gap-2">
+                            <i class="bi bi-tag text-danger"></i>
+                            <span class="text-muted small text-uppercase">Categoria:</span>
+                            <strong>@Model.Carro.Segmento</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center mb-4 p-3 bg-light rounded-3 border">
+                    <div class="rounded-circle bg-dark text-white d-flex align-items-center justify-content-center me-3 shadow-sm" style="width: 45px; height: 45px; font-size: 1.2rem;">
+                        @(Model.Vendedor?.Utilizador?.Nome?.Substring(0, 1).ToUpper() ?? "V")
                     </div>
                     <div>
-                        <div class="fw-bold">@(Model.Vendedor?.Utilizador?.Nome ?? "Vendedor")</div>
-                        <div class="small text-success"><i class="bi bi-patch-check-fill"></i> Verificado</div>
+                        <div class="fw-bold">@(Model.Vendedor?.Utilizador?.Nome ?? "Vendedor Particular")</div>
+                        <div class="small text-muted">Membro DCar</div>
                     </div>
                 </div>
 
                 <div class="d-grid gap-2">
                     @if (User.Identity.IsAuthenticated)
                     {
-                        if (User.IsInRole("Vendedor") && Model.Vendedor?.Utilizador?.UserName == User.Identity.Name)
+                        // SE FOR O DONO DO ANÚNCIO OU ADMIN
+                        if (User.IsInRole("Administrador") || (Model.Vendedor != null && Model.Vendedor.Utilizador.UserName == User.Identity.Name))
                         {
-                            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning fw-bold text-white">Editar Anúncio</a>
-                            <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger">Remover</a>
+                            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning btn-lg fw-bold text-white">
+                                <i class="bi bi-pencil-square me-2"></i> Editar Anúncio
+                            </a>
+                            <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger btn-lg fw-bold">
+                                <i class="bi bi-trash me-2"></i> Remover
+                            </a>
                         }
+                        // SE FOR COMPRADOR
                         else if (User.IsInRole("Comprador"))
                         {
-                            <button class="btn btn-dcar btn-lg shadow-sm">Contactar Vendedor</button>
-                            <button class="btn btn-outline-dark btn-lg">Reservar Visita</button>
+                            <button class="btn btn-dcar btn-lg fw-bold py-3 shadow-sm" onclick="alert('Mensagem enviada!')">
+                                <i class="bi bi-chat-dots-fill me-2"></i> Enviar Mensagem
+                            </button>
+                            <button class="btn btn-outline-dark btn-lg fw-bold py-3">
+                                <i class="bi bi-calendar-check me-2"></i> Agendar Visita
+                            </button>
+                        }
+                        // SE FOR VENDEDOR (mas não o dono)
+                        else
+                        {
+                            <div class="alert alert-warning text-center small">
+                                Vendedores não podem comprar carros de outros vendedores.
+                            </div>
                         }
                     }
                     else
                     {
-                        <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-dcar btn-lg">Login para Contactar</a>
+                        // SE NÃO ESTIVER LOGADO
+                        <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-dcar btn-lg py-3">
+                            Login para Contactar
+                        </a>
                     }
                 </div>
 
-                <hr class="my-4">
-                <div class="row g-2 text-center small text-muted">
-                    <div class="col-4 mb-3">
-                        <i class="bi bi-calendar3 d-block fs-4 mb-1 text-dark"></i> @Model.Carro.Ano
-                    </div>
-                    <div class="col-4 mb-3">
-                        <i class="bi bi-speedometer2 d-block fs-4 mb-1 text-dark"></i> @Model.Carro.Quilometragem km
-                    </div>
-                    <div class="col-4 mb-3">
-                        <i class="bi bi-fuel-pump d-block fs-4 mb-1 text-dark"></i> @Model.Carro.Combustivel.Tipo
-                    </div>
-                    <div class="col-4">
-                        <i class="bi bi-gear-wide d-block fs-4 mb-1 text-dark"></i> @Model.Carro.Caixa
-                    </div>
-                    <div class="col-8 text-truncate">
-                        <i class="bi bi-geo-alt d-block fs-4 mb-1 text-dark"></i> @Model.Localizacao
-                    </div>
+                <div class="text-center mt-3 small text-muted">
+                    <i class="bi bi-shield-lock"></i> Compra 100% Segura
                 </div>
 
             </div>
@@ -146,11 +290,15 @@
 </div>
 
 <script>
-    function mudarSlide(index) {
-        // Encontra o carrossel
+    function mudarSlide(index, element) {
         var myCarousel = document.getElementById('carroCarousel');
-        // Usa a API do Bootstrap para ir para o slide X
         var bsCarousel = new bootstrap.Carousel(myCarousel);
         bsCarousel.to(index);
+
+        // Limpar bordas de todas as miniaturas
+        document.querySelectorAll('img[onclick^="mudarSlide"]').forEach(img => img.style.borderColor = "#dee2e6");
+
+        // Adicionar borda vermelha à selecionada
+        element.style.borderColor = "#C92525";
     }
 </script>

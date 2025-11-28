@@ -47,5 +47,20 @@ namespace DCarMarketplace.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+        public IActionResult Termos()
+        {
+            return View();
+        }
+        // Adiciona estes dois métodos ao HomeController.cs
+
+        public IActionResult Sobre()
+        {
+            return View();
+        }
+
+        public IActionResult Contactos()
+        {
+            return View();
+        }
     }
 }

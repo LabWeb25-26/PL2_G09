@@ -6,45 +6,102 @@ namespace DCarMarketplace.Models.ViewModels
 {
     public class CriarAnuncioViewModel
     {
-        // --- DADOS DO ANÚNCIO ---
-        [Required(ErrorMessage = "O título é obrigatório")]
+        // ==========================================
+        // DADOS DO ANÚNCIO
+        // ==========================================
+
+        [Display(Name = "Título do Anúncio")]
+        [Required(ErrorMessage = "O título é obrigatório.")]
+        [StringLength(100, MinimumLength = 5, ErrorMessage = "O título deve ter entre 5 e 100 caracteres.")]
         public string Titulo { get; set; }
 
-        [Required(ErrorMessage = "A descrição é obrigatória")]
-        [MinLength(30, ErrorMessage = "A descrição deve ter pelo menos 30 caracteres.")] // Correção Descrição
+        [Display(Name = "Descrição Detalhada")]
+        [Required(ErrorMessage = "A descrição é obrigatória.")]
+        [MinLength(30, ErrorMessage = "A descrição deve ser mais detalhada (mínimo 30 caracteres).")]
         public string Descricao { get; set; }
 
-        [Required]
-        [Range(0, double.MaxValue, ErrorMessage = "O preço não pode ser negativo.")] // Correção Negativos
+        [Display(Name = "Preço (€)")]
+        [Required(ErrorMessage = "O preço é obrigatório.")]
+        [Range(1, 10000000, ErrorMessage = "O preço deve ser um valor positivo válido.")]
         public decimal Preco { get; set; }
 
+        [Display(Name = "Localização")]
+        [Required(ErrorMessage = "A localização é obrigatória (ex: Lisboa, Porto).")]
         public string Localizacao { get; set; }
 
-        // --- DADOS DO CARRO ---
-        [Required(ErrorMessage = "A matrícula é obrigatória")]
-        // Regex: Garante que existem pelo menos 2 letras em qualquer posição (Maiúsculas ou Minúsculas)
-        [RegularExpression(@".*[a-zA-Z].*[a-zA-Z].*", ErrorMessage = "A matrícula deve conter pelo menos 2 letras.")]
+
+        // ==========================================
+        // DADOS TÉCNICOS DO VEÍCULO
+        // ==========================================
+
+        [Display(Name = "Matrícula")]
+        [Required(ErrorMessage = "A matrícula é obrigatória.")]
+        [RegularExpression(@"^([A-Z]{2}-\d{2}-\d{2}|\d{2}-[A-Z]{2}-\d{2}|\d{2}-\d{2}-[A-Z]{2}|[A-Z]{2}-\d{2}-[A-Z]{2})$",
+            ErrorMessage = "Formato de matrícula inválido.")]
         public string Matricula { get; set; }
 
-        [Required]
-        // O Range valida se o ano é válido. A lista dropdown ajuda, mas isto protege o servidor.
-        [Range(1900, 2026, ErrorMessage = "Ano inválido.")]
+        // --- VIN (CAMPO QUE FALTAVA) ---
+        [Display(Name = "VIN (Nº de Quadro)")]
+        [Required(ErrorMessage = "O VIN é obrigatório.")]
+        [StringLength(17, MinimumLength = 17, ErrorMessage = "O VIN deve ter exatamente 17 caracteres.")]
+        public string VIN { get; set; }
+        // -------------------------------
+
+        [Display(Name = "Ano")]
+        [Required(ErrorMessage = "O ano é obrigatório.")]
         public int Ano { get; set; }
 
-        [Required]
-        [Range(0, int.MaxValue, ErrorMessage = "Os quilómetros não podem ser negativos.")] // Correção Negativos
+        [Display(Name = "Quilometragem")]
+        [Required(ErrorMessage = "A quilometragem é obrigatória.")]
+        [Range(0, 2000000, ErrorMessage = "A quilometragem não pode ser negativa.")]
         public int Quilometragem { get; set; }
 
+        [Display(Name = "Tipo de Caixa")]
         public string Caixa { get; set; }
 
-        [Required(ErrorMessage = "Selecione uma marca")]
+        [Display(Name = "Cor")]
+        [Required(ErrorMessage = "A cor é obrigatória.")]
+        public string Cor { get; set; }
+
+        [Display(Name = "Nº de Portas")]
+        [Required(ErrorMessage = "Indique o número de portas.")]
+        public int NumeroPortas { get; set; }
+
+        [Display(Name = "Segmento (Categoria)")]
+        [Required(ErrorMessage = "O segmento é obrigatório.")]
+        public string Segmento { get; set; }
+
+        [Display(Name = "Potência (cv)")]
+        [Required(ErrorMessage = "A potência é obrigatória.")]
+        [Range(1, 5000, ErrorMessage = "Insira uma potência válida (valor positivo).")]
+        public int Potencia { get; set; }
+
+        [Display(Name = "Cilindrada (cm³)")]
+        [Required(ErrorMessage = "A cilindrada é obrigatória.")]
+        [Range(50, 20000, ErrorMessage = "Insira uma cilindrada válida (valor positivo).")]
+        public int Cilindrada { get; set; }
+
+
+        // ==========================================
+        // CHAVES ESTRANGEIRAS
+        // ==========================================
+
+        [Display(Name = "Marca")]
+        [Required(ErrorMessage = "Selecione uma marca.")]
         public int MarcaId { get; set; }
 
-        [Required(ErrorMessage = "Selecione um combustível")]
+        [Display(Name = "Modelo")]
+        [Required(ErrorMessage = "Selecione um modelo.")]
+        public int ModeloId { get; set; }
+
+        [Display(Name = "Combustível")]
+        [Required(ErrorMessage = "Selecione o tipo de combustível.")]
         public int CombustivelId { get; set; }
 
-        [Required]
-        public int ModeloId { get; set; }
+
+        // ==========================================
+        // UPLOAD DE FOTOS
+        // ==========================================
 
         [Display(Name = "Fotografias (Máx 9)")]
         public List<IFormFile> ImagensFicheiros { get; set; }

@@ -2,8 +2,6 @@
 
 @{
     ViewData["Title"] = "Anúncios";
-
-    // Recuperar lista de IDs favoritos para saber quais corações pintar
     var favoritosIds = ViewBag.FavoritosIds as List<int> ?? new List<int>();
 }
 
@@ -12,32 +10,36 @@
 
         <div class="col-lg-3 mb-4">
             <div class="filter-sidebar">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h5 class="mb-0 fw-bold"><i class="bi bi-sliders"></i> Filtros</h5>
-                    <a asp-action="Index" class="text-muted small text-decoration-none">Limpar</a>
+                <div class="filter-header">
+                    <h5 class="m-0 fw-bold"><i class="bi bi-sliders2"></i> Filtros</h5>
+                    <a asp-action="Index" class="filter-reset">Limpar tudo</a>
                 </div>
 
                 <form asp-action="Index" method="get">
 
                     <div class="filter-group">
                         <label class="filter-label">Categoria</label>
-                        <select class="form-select text-muted">
-                            <option>Todas as categorias</option>
-                            <option>SUV</option>
-                            <option>Sedan</option>
-                            <option>Comercial</option>
+                        <select name="segmento" class="filter-select">
+                            <option value="Todos">Todas</option>
+                            <option value="SUV" selected="@((string)ViewData["SegmentoAtual"] == "SUV")">SUV</option>
+                            <option value="Sedan" selected="@((string)ViewData["SegmentoAtual"] == "Sedan")">Sedan</option>
+                            <option value="Comercial" selected="@((string)ViewData["SegmentoAtual"] == "Comercial")">Comercial</option>
+                            <option value="Citadino" selected="@((string)ViewData["SegmentoAtual"] == "Citadino")">Citadino</option>
+                            <option value="Desportivo" selected="@((string)ViewData["SegmentoAtual"] == "Desportivo")">Desportivo</option>
+                            <option value="Cabrio" selected="@((string)ViewData["SegmentoAtual"] == "Cabrio")">Cabrio</option>
+                            <option value="Coupe" selected="@((string)ViewData["SegmentoAtual"] == "Coupe")">Coupe</option>
                         </select>
                     </div>
 
                     <div class="filter-group">
                         <label class="filter-label">Marcas</label>
-                        <select name="marca" id="filterMarca" class="form-select" onchange="this.form.submit()">
+                        <select name="marca" id="filterMarca" class="filter-select" onchange="this.form.submit()">
                             <option value="">Todas as marcas</option>
                             @if (ViewBag.ListaMarcas != null)
                             {
                                 foreach (var m in ViewBag.ListaMarcas)
                                 {
-                                    <!option value="@m.Nome" @(m.Nome == (string)ViewData["MarcaAtual"] ? "selected" : "")>@m.Nome</!option>
+                                    <option value="@m.Nome" selected="@(m.Nome == (string)ViewData["MarcaAtual"])">@m.Nome</option>
                                 }
                             }
                         </select>
@@ -45,11 +47,11 @@
 
                     <div class="filter-group">
                         <label class="filter-label">Modelo</label>
-                        <select name="modelo" id="filterModelo" class="form-select text-muted" @(string.IsNullOrEmpty((string)ViewData["MarcaAtual"]) ? "disabled" : "")>
+                        <select name="modelo" id="filterModelo" class="filter-select text-muted" @(string.IsNullOrEmpty((string)ViewData["MarcaAtual"]) ? "disabled" : "")>
                             <option value="">Todos os modelos</option>
                             @if (ViewData["ModeloAtual"] != null)
                             {
-                                <!option value="@ViewData["ModeloAtual"]" selected>@ViewData["ModeloAtual"]</!option>
+                                <option value="@ViewData["ModeloAtual"]" selected>@ViewData["ModeloAtual"]</option>
                             }
                         </select>
                     </div>
@@ -57,119 +59,162 @@
                     <div class="filter-group">
                         <label class="filter-label">Preço (€)</label>
                         <div class="d-flex gap-2">
-                            <input type="number" class="form-control" placeholder="Mín" name="precoMin">
-                            <input type="number" class="form-control" placeholder="Máx" name="precoMax">
+                            <input type="number" class="filter-input" placeholder="Mín" name="precoMin" value="@ViewData["PrecoMin"]">
+                            <input type="number" class="filter-input" placeholder="Máx" name="precoMax" value="@ViewData["PrecoMax"]">
                         </div>
                     </div>
 
                     <div class="filter-group">
                         <label class="filter-label">Ano</label>
-                        <input type="range" class="form-range" min="2000" max="2025" id="anoRange">
-                        <div class="d-flex justify-content-between small text-muted">
-                            <span>2000</span>
-                            <span>2025</span>
+                        <div class="d-flex gap-2">
+                            <select name="anoMin" class="filter-select">
+                                <option value="">De</option>
+                                @for (int i = 1990; i <= 2026; i++)
+                                {
+                                    <option value="@i" selected="@(ViewData["AnoMin"]?.ToString() == i.ToString())">@i</option>
+                                }
+                            </select>
+                            <select name="anoMax" class="filter-select">
+                                <option value="">Até</option>
+                                @for (int i = 2026; i >= 1990; i--)
+                                {
+                                    <option value="@i" selected="@(ViewData["AnoMax"]?.ToString() == i.ToString())">@i</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label">Quilómetros</label>
+                        <div class="d-flex gap-2">
+                            <input type="number" class="filter-input" placeholder="Mín" name="kmMin" value="@ViewData["KmMin"]">
+                            <input type="number" class="filter-input" placeholder="Máx" name="kmMax" value="@ViewData["KmMax"]">
                         </div>
                     </div>
 
                     <div class="filter-group">
                         <label class="filter-label">Combustível</label>
-                        <select class="form-select">
-                            <option>Todos</option>
-                            <option>Diesel</option>
-                            <option>Gasolina</option>
-                            <option>Elétrico</option>
+                        <select name="combustivel" class="filter-select">
+                            <option value="">Todos</option>
+                            <option value="Diesel" selected="@((string)ViewData["CombustivelAtual"] == "Diesel")">Diesel</option>
+                            <option value="Gasolina" selected="@((string)ViewData["CombustivelAtual"] == "Gasolina")">Gasolina</option>
+                            <option value="Elétrico" selected="@((string)ViewData["CombustivelAtual"] == "Elétrico")">Elétrico</option>
+                            <option value="Híbrido" selected="@((string)ViewData["CombustivelAtual"] == "Híbrido")">Híbrido</option>
                         </select>
                     </div>
 
-                    <button type="submit" class="btn btn-details mt-3">Aplicar Filtros</button>
+                    <div class="filter-group">
+                        <label class="filter-label">Caixa</label>
+                        <select name="caixa" class="filter-select">
+                            <option value="">Todas</option>
+                            <option value="Manual" selected="@((string)ViewData["CaixaAtual"] == "Manual")">Manual</option>
+                            <option value="Automática" selected="@((string)ViewData["CaixaAtual"] == "Automática")">Automática</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label">Localização</label>
+                        <input type="text" class="filter-input" placeholder="Ex: Lisboa" name="localizacao" value="@ViewData["LocalizacaoAtual"]">
+                    </div>
+
+                    <button type="submit" class="btn-filter-apply">Aplicar Filtros</button>
                 </form>
             </div>
         </div>
 
         <div class="col-lg-9">
 
-            <form asp-action="Index" method="get" class="mb-4">
-                <div class="row align-items-center">
-                    <div class="col-md-8">
-                        <label class="form-label fw-bold small">Pesquisar</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-white border-end-0 rounded-start-pill ps-3">
-                                <i class="bi bi-search text-muted"></i>
-                            </span>
-                            <input type="text" name="pesquisa" class="form-control border-start-0 rounded-end-pill py-2"
-                                   placeholder="Marcas, Modelo, Ano..." value="@ViewData["PesquisaAtual"]">
-                        </div>
+            <div class="top-search-bar">
+                <form asp-action="Index" method="get" class="d-flex w-100 align-items-center gap-3">
+                    <input type="hidden" name="marca" value="@ViewData["MarcaAtual"]" />
+                    <input type="hidden" name="modelo" value="@ViewData["ModeloAtual"]" />
+                    <input type="hidden" name="segmento" value="@ViewData["SegmentoAtual"]" />
+                    <input type="hidden" name="anoMin" value="@ViewData["AnoMin"]" />
+                    <input type="hidden" name="anoMax" value="@ViewData["AnoMax"]" />
+                    <input type="hidden" name="precoMin" value="@ViewData["PrecoMin"]" />
+                    <input type="hidden" name="precoMax" value="@ViewData["PrecoMax"]" />
+                    <input type="hidden" name="kmMin" value="@ViewData["KmMin"]" />
+                    <input type="hidden" name="kmMax" value="@ViewData["KmMax"]" />
+                    <input type="hidden" name="combustivel" value="@ViewData["CombustivelAtual"]" />
+                    <input type="hidden" name="caixa" value="@ViewData["CaixaAtual"]" />
+                    <input type="hidden" name="localizacao" value="@ViewData["LocalizacaoAtual"]" />
+
+                    <div class="input-group flex-grow-1">
+                        <span class="input-group-text bg-transparent border-0"><i class="bi bi-search text-muted"></i></span>
+                        <input type="text" name="pesquisa" class="form-control border-0 bg-transparent shadow-none"
+                               placeholder="Pesquisar por marca, modelo, ano..." value="@ViewData["PesquisaAtual"]">
                     </div>
-                    <div class="col-md-4">
-                        <label class="form-label fw-bold small">Ordenar por</label>
-                        <select name="ordenacao" class="form-select rounded-pill" onchange="this.form.submit()">
+
+                    <div style="min-width: 180px;">
+                        <select name="ordenacao" class="filter-select border-0 bg-transparent fw-bold text-secondary" onchange="this.form.submit()">
                             <option value="recente" selected="@((string)ViewData["OrdenacaoAtual"] == "recente")">Mais recentes</option>
                             <option value="preco_asc" selected="@((string)ViewData["OrdenacaoAtual"] == "preco_asc")">Preço (Menor)</option>
                             <option value="preco_desc" selected="@((string)ViewData["OrdenacaoAtual"] == "preco_desc")">Preço (Maior)</option>
+                            <option value="km_asc" selected="@((string)ViewData["OrdenacaoAtual"] == "km_asc")">Km (Menor)</option>
+                            <option value="km_desc" selected="@((string)ViewData["OrdenacaoAtual"] == "km_desc")">Km (Maior)</option>
                         </select>
                     </div>
-                </div>
-                <input type="hidden" name="marca" value="@ViewData["MarcaAtual"]" />
-                <input type="hidden" name="modelo" value="@ViewData["ModeloAtual"]" />
-            </form>
+                </form>
+            </div>
 
-            <div class="row">
+            <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
                 @foreach (var item in Model)
                 {
-                    // Verifica se este carro é favorito do utilizador
                     bool isFav = favoritosIds.Contains(item.Id);
-
-                    <div class="col-md-4 mb-4">
-                        <div class="ad-card h-100">
+                    <div class="col">
+                        <div class="ad-card h-100 d-flex flex-column">
 
                             <div class="favorite-icon" onclick="toggleFavorito(@item.Id, this)">
                                 <i class="bi @(isFav ? "bi-heart-fill text-danger" : "bi-heart")"></i>
                             </div>
 
                             <div class="ad-card-img-container">
-                                @if (!string.IsNullOrEmpty(item.Fotos))
-                                {
-                                    var primeiraFoto = item.Fotos.Split(';', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+                                @{
+                                    string primeiraFoto = null;
+                                    if (!string.IsNullOrEmpty(item.Fotos))
+                                    {
+                                        primeiraFoto = item.Fotos.Split(';', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+                                    }
+                                }
 
-                                    if (!string.IsNullOrEmpty(primeiraFoto))
-                                    {
-                                        <img src="~/imagens_carros/@primeiraFoto" class="ad-card-img" alt="@item.Titulo">
-                                    }
-                                    else
-                                    {
-                                        <div class="d-flex align-items-center justify-content-center h-100 text-muted">
-                                            <i class="bi bi-camera-fill fs-1"></i>
-                                        </div>
-                                    }
+                                @if (!string.IsNullOrEmpty(primeiraFoto))
+                                {
+                                    <img src="~/imagens_carros/@primeiraFoto" class="ad-card-img" alt="@item.Titulo">
                                 }
                                 else
                                 {
-                                    <div class="d-flex align-items-center justify-content-center h-100 text-muted">
+                                    <div class="d-flex align-items-center justify-content-center h-100 bg-light text-muted">
                                         <i class="bi bi-camera-fill fs-1"></i>
                                     </div>
                                 }
                             </div>
 
-                            <div class="ad-card-body">
-                                <h5 class="ad-title">@item.Titulo</h5>
-                                <div class="ad-price">@item.Preco.ToString("N0")€</div>
+                            <div class="ad-card-body d-flex flex-column flex-grow-1">
+                                <h6 class="text-uppercase text-muted small mb-1 fw-bold">
+                                    @(item.Carro?.Modelo?.Marca?.Nome ?? "")
+                                </h6>
 
-                                <div class="ad-specs">
-                                    <div class="ad-spec-item">
-                                        <i class="bi bi-calendar3"></i> <span>@(item.Carro?.Ano)</span>
+                                <h5 class="ad-title text-truncate" title="@item.Titulo">@item.Titulo</h5>
+                                <div class="text-muted small mb-2">@(item.Carro?.Modelo?.Nome ?? "")</div>
+
+                                <div class="ad-price">@item.Preco.ToString("N0") €</div>
+
+                                <div class="ad-specs mt-auto">
+                                    <div class="ad-spec-item" title="Ano">
+                                        <i class="bi bi-calendar3"></i> @item.Carro?.Ano
                                     </div>
-                                    <div class="ad-spec-item">
-                                        <i class="bi bi-speedometer2"></i> <span>@(item.Carro?.Quilometragem.ToString("N0")) km</span>
+                                    <div class="ad-spec-item" title="Quilómetros">
+                                        <i class="bi bi-speedometer2"></i> @(item.Carro?.Quilometragem) km
                                     </div>
-                                    <div class="ad-spec-item">
-                                        <i class="bi bi-fuel-pump"></i> <span>@(item.Carro?.Combustivel?.Tipo)</span>
+                                    <div class="ad-spec-item" title="Combustível">
+                                        <i class="bi bi-fuel-pump"></i> @item.Carro?.Combustivel?.Tipo
                                     </div>
-                                    <div class="ad-spec-item">
-                                        <i class="bi bi-geo-alt"></i> <span>@item.Localizacao</span>
+                                    <div class="ad-spec-item" title="Localização">
+                                        <i class="bi bi-geo-alt"></i> @item.Localizacao
                                     </div>
                                 </div>
 
-                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-details">Ver Detalhes</a>
+                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-details mt-3">Ver Detalhes</a>
                             </div>
                         </div>
                     </div>
@@ -178,10 +223,10 @@
 
             @if (!Model.Any())
             {
-                <div class="alert alert-light text-center py-5 shadow-sm rounded-4">
+                <div class="alert alert-light text-center py-5 shadow-sm rounded-4 mt-4">
                     <i class="bi bi-search text-muted" style="font-size: 3rem;"></i>
-                    <h4 class="mt-3 fw-bold">Nenhum resultado encontrado</h4>
-                    <p class="text-muted">Tente alterar os filtros ou a pesquisa.</p>
+                    <h4 class="mt-3 fw-bold">Nenhum veículo encontrado</h4>
+                    <p class="text-muted">Tente ajustar os filtros ou remover alguns critérios.</p>
                     <a asp-action="Index" class="btn btn-outline-dark mt-2">Limpar Tudo</a>
                 </div>
             }
@@ -192,8 +237,7 @@
 @section Scripts {
     <script>
         $(document).ready(function () {
-
-            // 1. Lógica para a dropdown de Modelos (Filtro Lateral)
+            // Lógica AJAX para Modelos
             var marcaAtual = "@ViewData["MarcaAtual"]";
             var modeloAtual = "@ViewData["ModeloAtual"]";
 
@@ -203,44 +247,36 @@
 
             function carregarModelos(marca, selectorDropdown, modeloSelecionado = null) {
                 var dropdown = $(selectorDropdown);
-
                 $.getJSON("/Anuncios/GetModelosByMarca", { nomeMarca: marca }, function (dados) {
                     dropdown.empty();
                     dropdown.append('<option value="">Todos os modelos</option>');
-
                     $.each(dados, function (index, item) {
                         var selected = (item.nome == modeloSelecionado) ? "selected" : "";
                         dropdown.append('<option value="' + item.nome + '" ' + selected + '>' + item.nome + '</option>');
                     });
+                    dropdown.prop("disabled", false).removeClass("text-muted");
+                });
+            }
 
-                    dropdown.prop("disabled", false);
-                    dropdown.removeClass("text-muted");
+            // Lógica para Favoritos
+            window.toggleFavorito = function(id, el) {
+                 $.post("/Favoritos/Toggle", { anuncioId: id }, function (data) {
+                    if (data.success) {
+                        var icon = $(el).find("i");
+                        if (data.isFavorited) {
+                            icon.removeClass("bi-heart").addClass("bi-heart-fill text-danger");
+                        } else {
+                            icon.removeClass("bi-heart-fill text-danger").addClass("bi-heart");
+                        }
+                        // Atualiza o contador no topo se existir
+                        if ($("#fav-count").length) {
+                            $("#fav-count").text("(" + data.count + ")");
+                        }
+                    } else {
+                        window.location.href = "/Identity/Account/Login";
+                    }
                 });
             }
         });
-
-        // 2. Função de Favoritos (Global)
-        function toggleFavorito(anuncioId, element) {
-            $.post("/Favoritos/Toggle", { anuncioId: anuncioId }, function (data) {
-                if (data.success) {
-                    var icon = $(element).find("i");
-
-                    // Troca o ícone visualmente
-                    if (data.isFavorited) {
-                        icon.removeClass("bi-heart").addClass("bi-heart-fill text-danger");
-                    } else {
-                        icon.removeClass("bi-heart-fill text-danger").addClass("bi-heart");
-                    }
-
-                    // Atualiza o contador na barra de topo (se existir)
-                    $("#fav-count").text("(" + data.count + ")");
-                } else {
-                    // Se não estiver logado ou der erro, manda para o login
-                    window.location.href = "/Identity/Account/Login";
-                }
-            }).fail(function() {
-                 window.location.href = "/Identity/Account/Login";
-            });
-        }
     </script>
 }
