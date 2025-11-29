@@ -3,7 +3,7 @@
 @{
     ViewData["Title"] = "Eliminar Anúncio";
 
-    // Lógica segura para obter a primeira foto
+    // Lógica segura para a imagem
     string primeiraFoto = null;
     if (!string.IsNullOrEmpty(Model.Fotos))
     {
@@ -43,8 +43,8 @@
                     <h4 class="fw-bold text-dark mb-1">@Model.Titulo</h4>
 
                     <p class="text-muted mb-3">
-                        @(Model.Carro?.Modelo?.Marca?.Nome ?? "Marca")
-                        @(Model.Carro?.Modelo?.Nome ?? "Modelo") •
+                        @(Model.Carro?.Modelo?.Marca?.Nome ?? "Marca N/A")
+                        @(Model.Carro?.Modelo?.Nome ?? "Modelo N/A") •
                         @(Model.Carro?.Ano)
                     </p>
 

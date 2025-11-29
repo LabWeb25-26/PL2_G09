@@ -1,0 +1,41 @@
+﻿@model IEnumerable<DCarMarketplace.Models.FiltroFavorito>
+
+@{
+    ViewData["Title"] = "Pesquisas Guardadas";
+}
+
+<div class="container mt-5">
+    <h2 class="fw-bold mb-4"><i class="bi bi-bookmark-star"></i> Pesquisas Guardadas</h2>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-light text-center py-5">
+            <h4>Ainda não guardou nenhuma pesquisa.</h4>
+            <p>Faça uma pesquisa e clique em "Guardar Pesquisa" para a ver aqui.</p>
+            <a asp-controller="Anuncios" asp-action="Index" class="btn btn-dcar">Ir Pesquisar</a>
+        </div>
+    }
+    else
+    {
+        <div class="list-group shadow-sm rounded-4">
+            @foreach (var filtro in Model)
+            {
+                <div class="list-group-item p-4 d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="fw-bold mb-1">@filtro.Nome</h5>
+                        <small class="text-muted">Criado em: @filtro.DataCriacao.ToShortDateString()</small>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a href="/Anuncios/Index@(filtro.UrlQuery)" class="btn btn-outline-primary btn-sm fw-bold">
+                            <i class="bi bi-search"></i> Ver Resultados
+                        </a>
+                        <form asp-action="ApagarFiltro" method="post">
+                            <input type="hidden" name="id" value="@filtro.Id" />
+                            <button type="submit" class="btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i></button>
+                        </form>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

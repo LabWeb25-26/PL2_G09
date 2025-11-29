@@ -1,15 +1,16 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DCarMarketplace.Models
 {
     public class MarcaFavorita
     {
-        // Chave composta deve ser definida no DbContext
-        public string CompradorId { get; set; }
-        public int MarcaId { get; set; }
+        // Chave composta configurada no DbContext
+        public string UtilizadorId { get; set; }
+        [ForeignKey("UtilizadorId")]
+        public virtual Utilizador Utilizador { get; set; }
 
-        [ForeignKey("CompradorId")]
-        public virtual Comprador Comprador { get; set; }
+        public int MarcaId { get; set; }
         [ForeignKey("MarcaId")]
         public virtual Marca Marca { get; set; }
     }

@@ -39,7 +39,7 @@
                             {
                                 foreach (var m in ViewBag.ListaMarcas)
                                 {
-                                    <option value="@m.Nome" selected="@(m.Nome == (string)ViewData["MarcaAtual"])">@m.Nome</option>
+                                    <!option value="@m.Nome" @(m.Nome == (string)ViewData["MarcaAtual"] ? "selected" : "")>@m.Nome</!option>
                                 }
                             }
                         </select>
@@ -51,7 +51,7 @@
                             <option value="">Todos os modelos</option>
                             @if (ViewData["ModeloAtual"] != null)
                             {
-                                <option value="@ViewData["ModeloAtual"]" selected>@ViewData["ModeloAtual"]</option>
+                                <!option value="@ViewData["ModeloAtual"]" selected>@ViewData["ModeloAtual"]</!option>
                             }
                         </select>
                     </div>
@@ -71,14 +71,14 @@
                                 <option value="">De</option>
                                 @for (int i = 1990; i <= 2026; i++)
                                 {
-                                    <option value="@i" selected="@(ViewData["AnoMin"]?.ToString() == i.ToString())">@i</option>
+                                    <!option value="@i" @(ViewData["AnoMin"]?.ToString() == i.ToString() ? "selected" : "")>@i</!option>
                                 }
                             </select>
                             <select name="anoMax" class="filter-select">
                                 <option value="">Até</option>
                                 @for (int i = 2026; i >= 1990; i--)
                                 {
-                                    <option value="@i" selected="@(ViewData["AnoMax"]?.ToString() == i.ToString())">@i</option>
+                                    <!option value="@i" @(ViewData["AnoMax"]?.ToString() == i.ToString() ? "selected" : "")>@i</!option>
                                 }
                             </select>
                         </div>
@@ -154,6 +154,13 @@
                             <option value="km_desc" selected="@((string)ViewData["OrdenacaoAtual"] == "km_desc")">Km (Maior)</option>
                         </select>
                     </div>
+
+                    @if (User.IsInRole("Comprador"))
+                    {
+                        <button type="button" class="btn btn-outline-danger ms-2 border-0" onclick="guardarPesquisa()" title="Guardar esta pesquisa">
+                            <i class="bi bi-bookmark-plus fs-5"></i>
+                        </button>
+                    }
                 </form>
             </div>
 
@@ -164,57 +171,85 @@
                     <div class="col">
                         <div class="ad-card h-100 d-flex flex-column">
 
+                            @if (item.Estado != "ativo")
+                            {
+                                <div class="position-absolute top-0 start-0 m-2 z-3">
+                                    @if (item.Estado == "reservado")
+                                    {
+                                        <span class="badge bg-info text-dark shadow"><i class="bi bi-clock"></i> RESERVADO</span>
+                                    }
+                                    else if (item.Estado == "vendido")
+                                    {
+
+                                        <span class="badge bg-danger shadow"><i class="bi bi-tag-fill"></i> VENDIDO</span>
+                                    }
+                                    else if (item.Estado == "pausado")
+                                    {
+
+                                        <span class="badge bg-warning text-dark shadow"><i class="bi bi-pause-circle"></i> PAUSADO</span>
+                                    }
+                                </div>
+                            }
+
                             <div class="favorite-icon" onclick="toggleFavorito(@item.Id, this)">
                                 <i class="bi @(isFav ? "bi-heart-fill text-danger" : "bi-heart")"></i>
                             </div>
 
                             <div class="ad-card-img-container">
-                                @{
-                                    string primeiraFoto = null;
-                                    if (!string.IsNullOrEmpty(item.Fotos))
-                                    {
-                                        primeiraFoto = item.Fotos.Split(';', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
-                                    }
-                                }
-
-                                @if (!string.IsNullOrEmpty(primeiraFoto))
+                                @if (!string.IsNullOrEmpty(item.Fotos))
                                 {
-                                    <img src="~/imagens_carros/@primeiraFoto" class="ad-card-img" alt="@item.Titulo">
+                                    var primeiraFoto = item.Fotos.Split(';', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+                                    if (!string.IsNullOrEmpty(primeiraFoto))
+                                    {
+                                        <img src="~/imagens_carros/@primeiraFoto" class="ad-card-img" alt="@item.Titulo">
+                                    }
+                                    else
+                                    {
+
+                                        <div class="d-flex align-items-center justify-content-center h-100 bg-light text-muted"><i class="bi bi-camera-fill fs-1"></i></div>
+                                    }
                                 }
                                 else
                                 {
-                                    <div class="d-flex align-items-center justify-content-center h-100 bg-light text-muted">
-                                        <i class="bi bi-camera-fill fs-1"></i>
-                                    </div>
+
+                                    <div class="d-flex align-items-center justify-content-center h-100 bg-light text-muted"><i class="bi bi-camera-fill fs-1"></i></div>
                                 }
                             </div>
 
                             <div class="ad-card-body d-flex flex-column flex-grow-1">
-                                <h6 class="text-uppercase text-muted small mb-1 fw-bold">
-                                    @(item.Carro?.Modelo?.Marca?.Nome ?? "")
-                                </h6>
-
-                                <h5 class="ad-title text-truncate" title="@item.Titulo">@item.Titulo</h5>
-                                <div class="text-muted small mb-2">@(item.Carro?.Modelo?.Nome ?? "")</div>
+                                <h5 class="ad-title" title="@item.Titulo">@item.Titulo</h5>
+                                <div class="text-muted small mb-2">@(item.Carro.Modelo?.Marca?.Nome) @(item.Carro.Modelo?.Nome)</div>
 
                                 <div class="ad-price">@item.Preco.ToString("N0") €</div>
 
                                 <div class="ad-specs mt-auto">
-                                    <div class="ad-spec-item" title="Ano">
-                                        <i class="bi bi-calendar3"></i> @item.Carro?.Ano
-                                    </div>
-                                    <div class="ad-spec-item" title="Quilómetros">
-                                        <i class="bi bi-speedometer2"></i> @(item.Carro?.Quilometragem) km
-                                    </div>
-                                    <div class="ad-spec-item" title="Combustível">
-                                        <i class="bi bi-fuel-pump"></i> @item.Carro?.Combustivel?.Tipo
-                                    </div>
-                                    <div class="ad-spec-item" title="Localização">
-                                        <i class="bi bi-geo-alt"></i> @item.Localizacao
-                                    </div>
+                                    <div class="ad-spec-item" title="Ano"><i class="bi bi-calendar3"></i> @item.Carro?.Ano</div>
+                                    <div class="ad-spec-item" title="Km"><i class="bi bi-speedometer2"></i> @(item.Carro?.Quilometragem) km</div>
+                                    <div class="ad-spec-item" title="Combustível"><i class="bi bi-fuel-pump"></i> @item.Carro?.Combustivel?.Tipo</div>
+                                    <div class="ad-spec-item" title="Local"><i class="bi bi-geo-alt"></i> @item.Localizacao</div>
                                 </div>
 
-                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-details mt-3">Ver Detalhes</a>
+                                <div class="mt-3 d-grid gap-2">
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-details">Ver Detalhes</a>
+
+                                    @if (User.Identity.IsAuthenticated && item.Vendedor?.Utilizador?.UserName == User.Identity.Name)
+                                    {
+                                        <div class="btn-group shadow-sm" role="group">
+                                            <div class="btn-group w-100" role="group">
+                                                <button id="btnGroupDrop1" type="button" class="btn btn-outline-dark btn-sm dropdown-toggle fw-bold" data-bs-toggle="dropdown">Estado</button>
+                                                <ul class="dropdown-menu">
+                                                    <li><form asp-action="AtualizarEstado" asp-route-id="@item.Id" method="post"><input type="hidden" name="novoEstado" value="ativo" /><button class="dropdown-item text-success fw-bold">Ativo</button></form></li>
+                                                    <li><form asp-action="AtualizarEstado" asp-route-id="@item.Id" method="post"><input type="hidden" name="novoEstado" value="reservado" /><button class="dropdown-item text-info fw-bold">Reservado</button></form></li>
+                                                    <li><form asp-action="AtualizarEstado" asp-route-id="@item.Id" method="post"><input type="hidden" name="novoEstado" value="pausado" /><button class="dropdown-item text-warning fw-bold">Pausado</button></form></li>
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li><form asp-action="AtualizarEstado" asp-route-id="@item.Id" method="post"><input type="hidden" name="novoEstado" value="vendido" /><button class="dropdown-item text-danger fw-bold">Vendido</button></form></li>
+                                                </ul>
+                                            </div>
+                                            <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning text-white"><i class="bi bi-pencil-fill"></i></a>
+                                            <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash-fill"></i></a>
+                                        </div>
+                                    }
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -224,9 +259,7 @@
             @if (!Model.Any())
             {
                 <div class="alert alert-light text-center py-5 shadow-sm rounded-4 mt-4">
-                    <i class="bi bi-search text-muted" style="font-size: 3rem;"></i>
-                    <h4 class="mt-3 fw-bold">Nenhum veículo encontrado</h4>
-                    <p class="text-muted">Tente ajustar os filtros ou remover alguns critérios.</p>
+                    <h4 class="mt-3 fw-bold text-muted">Nenhum veículo encontrado</h4>
                     <a asp-action="Index" class="btn btn-outline-dark mt-2">Limpar Tudo</a>
                 </div>
             }
@@ -237,19 +270,16 @@
 @section Scripts {
     <script>
         $(document).ready(function () {
-            // Lógica AJAX para Modelos
+            // AJAX Modelos
             var marcaAtual = "@ViewData["MarcaAtual"]";
             var modeloAtual = "@ViewData["ModeloAtual"]";
 
-            if (marcaAtual) {
-                carregarModelos(marcaAtual, "#filterModelo", modeloAtual);
-            }
+            if (marcaAtual) carregarModelos(marcaAtual, "#filterModelo", modeloAtual);
 
             function carregarModelos(marca, selectorDropdown, modeloSelecionado = null) {
                 var dropdown = $(selectorDropdown);
                 $.getJSON("/Anuncios/GetModelosByMarca", { nomeMarca: marca }, function (dados) {
-                    dropdown.empty();
-                    dropdown.append('<option value="">Todos os modelos</option>');
+                    dropdown.empty().append('<option value="">Todos os modelos</option>');
                     $.each(dados, function (index, item) {
                         var selected = (item.nome == modeloSelecionado) ? "selected" : "";
                         dropdown.append('<option value="' + item.nome + '" ' + selected + '>' + item.nome + '</option>');
@@ -258,25 +288,29 @@
                 });
             }
 
-            // Lógica para Favoritos
+            // Favoritos
             window.toggleFavorito = function(id, el) {
                  $.post("/Favoritos/Toggle", { anuncioId: id }, function (data) {
                     if (data.success) {
                         var icon = $(el).find("i");
-                        if (data.isFavorited) {
-                            icon.removeClass("bi-heart").addClass("bi-heart-fill text-danger");
-                        } else {
-                            icon.removeClass("bi-heart-fill text-danger").addClass("bi-heart");
-                        }
-                        // Atualiza o contador no topo se existir
-                        if ($("#fav-count").length) {
-                            $("#fav-count").text("(" + data.count + ")");
-                        }
-                    } else {
-                        window.location.href = "/Identity/Account/Login";
-                    }
+                        if (data.isFavorited) icon.removeClass("bi-heart").addClass("bi-heart-fill text-danger");
+                        else icon.removeClass("bi-heart-fill text-danger").addClass("bi-heart");
+                        $("#fav-count").text("(" + data.count + ")");
+                    } else { window.location.href = "/Identity/Account/Login"; }
                 });
             }
         });
+
+        // Guardar Pesquisa (NOVO)
+        function guardarPesquisa() {
+            var nome = prompt("Dê um nome a esta pesquisa (ex: BMWs baratos):");
+            if (nome) {
+                var query = window.location.search;
+                if (!query) query = "?" + $("form").serialize();
+                $.post("/Comprador/SalvarFiltro", { nome: nome, queryUrl: query }, function(res) {
+                    if(res.success) alert("Pesquisa guardada nos favoritos!");
+                });
+            }
+        }
     </script>
 }

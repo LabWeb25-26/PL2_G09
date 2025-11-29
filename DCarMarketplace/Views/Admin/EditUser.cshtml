@@ -1,0 +1,74 @@
+﻿@model DCarMarketplace.Models.Utilizador
+
+@{
+    ViewData["Title"] = "Editar Utilizador";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-header bg-white border-0 pt-4 pb-0">
+                    <h3 class="fw-bold text-dark">Editar Perfil</h3>
+                    <p class="text-muted mb-0">ID: @Model.Id</p>
+                </div>
+
+                <div class="card-body p-5">
+                    <form asp-action="EditUser">
+                        <input type="hidden" asp-for="Id" />
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input asp-for="Nome" class="form-control" placeholder="Nome" />
+                                    <label asp-for="Nome">Nome Completo</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input asp-for="Email" class="form-control" placeholder="Email" />
+                                    <label asp-for="Email">Email</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-floating mb-4">
+                            <select asp-for="EstadoConta" class="form-select">
+                                <option value="ativo">Ativo</option>
+                                <option value="bloqueado">Bloqueado</option>
+                            </select>
+                            <label asp-for="EstadoConta">Estado da Conta</label>
+                        </div>
+
+                        <div class="alert alert-light border">
+                            <strong>Tipo de Utilizador:</strong>
+                            @if (Model.Vendedor != null)
+                            {
+                                <span>Vendedor</span>
+                            }
+                            else if (Model.Comprador != null)
+                            {
+
+                                <span>Comprador</span>
+                            }
+                            else
+                            {
+
+                                <span>Admin</span>
+                            }
+                            <br>
+                            <strong>Data de Registo:</strong> @Model.DataRegisto
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a asp-action="Index" class="btn btn-outline-secondary px-4">Cancelar</a>
+                            <button type="submit" class="btn btn-primary px-4">Guardar Alterações</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

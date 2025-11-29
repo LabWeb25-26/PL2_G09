@@ -1,0 +1,91 @@
+﻿@model DCarMarketplace.Models.Anuncio
+
+@{
+    ViewData["Title"] = "Checkout Seguro";
+    var foto = Model.Fotos?.Split(';').FirstOrDefault();
+}
+
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="card-header bg-white border-bottom py-4 text-center">
+                    <h3 class="fw-bold text-dark mb-0"><i class="bi bi-shield-lock-fill text-success"></i> Checkout Seguro</h3>
+                </div>
+
+                <div class="card-body p-5">
+
+                    <h5 class="fw-bold mb-4">Resumo do Pedido</h5>
+                    <div class="d-flex align-items-center bg-light p-3 rounded-3 mb-4 border">
+                        @if (!string.IsNullOrEmpty(foto))
+                        {
+                            <img src="~/imagens_carros/@foto" class="rounded-3 me-3" style="width: 100px; height: 70px; object-fit: cover;">
+                        }
+                        <div class="flex-grow-1">
+                            <h5 class="mb-0 fw-bold">@Model.Carro.Modelo.Marca.Nome @Model.Carro.Modelo.Nome</h5>
+                            <small class="text-muted">@Model.Titulo</small>
+                        </div>
+                        <div class="text-end">
+                            <h4 class="text-danger fw-bold mb-0">@Model.Preco.ToString("N0") €</h4>
+                        </div>
+                    </div>
+
+                    <h5 class="fw-bold mb-3">Método de Pagamento</h5>
+                    <form asp-action="ConfirmarCompra" method="post">
+                        <input type="hidden" name="id" value="@Model.Id" />
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <div class="form-check border p-3 rounded-3 bg-white">
+                                    <input class="form-check-input" type="radio" name="metodoPagamento" id="payMB" value="MB" checked>
+                                    <label class="form-check-label w-100 fw-bold" for="payMB">
+                                        <i class="bi bi-credit-card-2-front me-2"></i> Multibanco / Cartão
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check border p-3 rounded-3 bg-white">
+                                    <input class="form-check-input" type="radio" name="metodoPagamento" id="payTransfer" value="Transfer">
+                                    <label class="form-check-label w-100 fw-bold" for="payTransfer">
+                                        <i class="bi bi-bank me-2"></i> Transferência Bancária
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-12">
+                                <label class="form-label small text-muted text-uppercase fw-bold">Nome no Cartão</label>
+                                <input type="text" class="form-control" placeholder="Como aparece no cartão">
+                            </div>
+                            <div class="col-md-8">
+                                <label class="form-label small text-muted text-uppercase fw-bold">Número do Cartão</label>
+                                <input type="text" class="form-control" placeholder="0000 0000 0000 0000">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label small text-muted text-uppercase fw-bold">Validade</label>
+                                <input type="text" class="form-control" placeholder="MM/AA">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label small text-muted text-uppercase fw-bold">CVV</label>
+                                <input type="text" class="form-control" placeholder="123">
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a href="javascript:history.back()" class="text-decoration-none text-muted fw-bold">Cancelar</a>
+                            <button type="submit" class="btn btn-success btn-lg fw-bold px-5 shadow">
+                                PAGAR E CONFIRMAR <i class="bi bi-arrow-right"></i>
+                            </button>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

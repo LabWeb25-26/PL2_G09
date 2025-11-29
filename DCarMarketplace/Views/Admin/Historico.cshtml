@@ -1,0 +1,89 @@
+﻿@model IEnumerable<DCarMarketplace.Models.HistoricoAcaoAdmin>
+
+@{
+    ViewData["Title"] = "Histórico de Auditoria";
+}
+
+<div class="container mt-5 mb-5">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-danger mb-0"><i class="bi bi-clock-history"></i> Histórico de Ações</h2>
+            <p class="text-muted mb-0">Registo de auditoria administrativa (RF-24).</p>
+        </div>
+        <a asp-action="Index" class="btn btn-outline-dark">
+            <i class="bi bi-people"></i> Voltar aos Utilizadores
+        </a>
+    </div>
+
+    <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light text-uppercase small fw-bold text-muted">
+                    <tr>
+                        <th class="ps-4 py-3">Data</th>
+                        <th>Admin</th>
+                        <th>Ação</th>
+                        <th>Alvo</th>
+                        <th>Detalhes/Motivo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="ps-4 text-nowrap">
+                                <div class="fw-bold">@item.Data.ToShortDateString()</div>
+                                <div class="small text-muted">@item.Data.ToShortTimeString()</div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="rounded-circle bg-dark text-white d-flex justify-content-center align-items-center me-2" style="width: 30px; height: 30px; font-size: 0.8rem;">
+                                        @(item.Admin?.Utilizador?.Nome?.Substring(0, 1).ToUpper() ?? "A")
+                                    </div>
+                                    <span class="fw-bold text-dark">@(item.Admin?.Utilizador?.Nome ?? "Sistema")</span>
+                                </div>
+                            </td>
+                            <td>
+                                @if (item.TipoAcao.Contains("Bloqueio"))
+                                {
+                                    <span class="badge bg-danger bg-opacity-10 text-danger border border-danger">@item.TipoAcao</span>
+                                }
+                                else if (item.TipoAcao.Contains("Aprovação") || item.TipoAcao.Contains("Desbloqueio"))
+                                {
+                                    <span class="badge bg-success bg-opacity-10 text-success border border-success">@item.TipoAcao</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary bg-opacity-10 text-secondary border">@item.TipoAcao</span>
+                                }
+                            </td>
+                            <td>
+                                @if (item.AlvoUtilizador != null)
+                                {
+                                    <span>@item.AlvoUtilizador.Nome</span>
+                                    <div class="small text-muted">@item.AlvoUtilizador.Email</div>
+                                }
+                                else
+                                {
+                                    <span class="text-muted fst-italic">N/A</span>
+                                }
+                            </td>
+                            <td class="text-muted small">
+                                @item.Motivo
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            @if (!Model.Any())
+            {
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-inbox fs-1"></i>
+                    <p class="mt-2">Ainda não existem registos no histórico.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>

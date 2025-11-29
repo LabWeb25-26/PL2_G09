@@ -33,7 +33,7 @@ namespace DCarMarketplace.Data
         public DbSet<MarcaFavorita> MarcasFavoritas { get; set; }
         public DbSet<HistoricoAcaoAdmin> HistoricoAcoesAdmin { get; set; }
 
-        // NOVO: Tabela de Favoritos (Corações)
+        // Tabela de Favoritos (Corações)
         public DbSet<AnuncioFavorito> AnunciosFavoritos { get; set; }
 
 
@@ -67,45 +67,65 @@ namespace DCarMarketplace.Data
             // B. CORREÇÃO DE CICLOS DE CASCATA (ERRO SQL 1785)
             // =========================================================================
 
-            // 1. Agendas e Reservas
+            // 1. Agendas
             builder.Entity<Agenda>()
                 .HasOne(a => a.Comprador)
                 .WithMany(c => c.VisitasAgendadas)
                 .HasForeignKey(a => a.CompradorId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            builder.Entity<Agenda>()
+                .HasOne(a => a.Anuncio)
+                .WithMany()
+                .HasForeignKey(a => a.AnuncioId)
+                .OnDelete(DeleteBehavior.Restrict); // Adicionado para evitar ciclo com Anuncio
+
+            // 2. Reservas
             builder.Entity<Reserva>()
                 .HasOne(r => r.Comprador)
                 .WithMany(c => c.Reservas)
                 .HasForeignKey(r => r.CompradorId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            builder.Entity<Reserva>()
+                .HasOne(r => r.Anuncio)
+                .WithMany()
+                .HasForeignKey(r => r.AnuncioId)
+                .OnDelete(DeleteBehavior.Restrict); // Adicionado para segurança
+
+            // 3. Compras
             builder.Entity<Compra>()
                 .HasOne(c => c.Comprador)
                 .WithMany(c => c.Compras)
                 .HasForeignKey(c => c.CompradorId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // 2. Favoritos (NOVA CORREÇÃO)
-            // Impede que apagar um Utilizador tente apagar favoritos de duas formas diferentes
+            builder.Entity<Compra>()
+                .HasOne(c => c.Anuncio)
+                .WithOne()
+                .HasForeignKey<Compra>(c => c.AnuncioId)
+                .OnDelete(DeleteBehavior.Restrict); // Adicionado para segurança
+
+            // 4. Favoritos
             builder.Entity<AnuncioFavorito>()
                 .HasOne(f => f.Utilizador)
                 .WithMany()
                 .HasForeignKey(f => f.UtilizadorId)
-                .OnDelete(DeleteBehavior.Restrict); // <--- IMPORTANTE
+                .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<AnuncioFavorito>()
                 .HasOne(f => f.Anuncio)
                 .WithMany()
                 .HasForeignKey(f => f.AnuncioId)
-                .OnDelete(DeleteBehavior.Restrict); // <--- IMPORTANTE
+                .OnDelete(DeleteBehavior.Restrict);
 
             // =========================================================================
             // C. CHAVES COMPOSTAS E ÍNDICES ÚNICOS
             // =========================================================================
 
+            // *** AQUI ESTAVA O ERRO: Mudei CompradorId para UtilizadorId ***
             builder.Entity<MarcaFavorita>()
-                .HasKey(mf => new { mf.CompradorId, mf.MarcaId });
+                .HasKey(mf => new { mf.UtilizadorId, mf.MarcaId });
 
             builder.Entity<Anuncio>()
                 .HasIndex(a => a.CarroId)

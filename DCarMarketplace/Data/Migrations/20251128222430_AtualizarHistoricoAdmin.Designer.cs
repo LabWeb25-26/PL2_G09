@@ -4,6 +4,7 @@ using DCarMarketplace.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DCarMarketplace.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251128222430_AtualizarHistoricoAdmin")]
+    partial class AtualizarHistoricoAdmin
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -43,9 +46,6 @@ namespace DCarMarketplace.Data.Migrations
                     b.Property<int>("AnuncioId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("AnuncioId1")
-                        .HasColumnType("int");
-
                     b.Property<string>("CompradorId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
@@ -63,8 +63,6 @@ namespace DCarMarketplace.Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AnuncioId");
-
-                    b.HasIndex("AnuncioId1");
 
                     b.HasIndex("CompradorId");
 
@@ -250,9 +248,6 @@ namespace DCarMarketplace.Data.Migrations
                     b.Property<int>("AnuncioId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("AnuncioId1")
-                        .HasColumnType("int");
-
                     b.Property<string>("CompradorId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
@@ -271,10 +266,6 @@ namespace DCarMarketplace.Data.Migrations
 
                     b.HasIndex("AnuncioId")
                         .IsUnique();
-
-                    b.HasIndex("AnuncioId1")
-                        .IsUnique()
-                        .HasFilter("[AnuncioId1] IS NOT NULL");
 
                     b.HasIndex("CompradorId");
 
@@ -309,28 +300,20 @@ namespace DCarMarketplace.Data.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("CompradorId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<DateTime>("DataCriacao")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Nome")
+                    b.Property<string>("Criterios")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UrlQuery")
+                    b.Property<string>("NomeFiltro")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UtilizadorId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("CompradorId");
-
-                    b.HasIndex("UtilizadorId");
 
                     b.ToTable("FiltrosFavoritos");
                 });
@@ -398,18 +381,13 @@ namespace DCarMarketplace.Data.Migrations
 
             modelBuilder.Entity("DCarMarketplace.Models.MarcaFavorita", b =>
                 {
-                    b.Property<string>("UtilizadorId")
+                    b.Property<string>("CompradorId")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("MarcaId")
                         .HasColumnType("int");
 
-                    b.Property<string>("CompradorId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("UtilizadorId", "MarcaId");
-
-                    b.HasIndex("CompradorId");
+                    b.HasKey("CompradorId", "MarcaId");
 
                     b.HasIndex("MarcaId");
 
@@ -450,9 +428,6 @@ namespace DCarMarketplace.Data.Migrations
                     b.Property<int>("AnuncioId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("AnuncioId1")
-                        .HasColumnType("int");
-
                     b.Property<string>("CompradorId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
@@ -470,8 +445,6 @@ namespace DCarMarketplace.Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AnuncioId");
-
-                    b.HasIndex("AnuncioId1");
 
                     b.HasIndex("CompradorId");
 
@@ -741,14 +714,10 @@ namespace DCarMarketplace.Data.Migrations
             modelBuilder.Entity("DCarMarketplace.Models.Agenda", b =>
                 {
                     b.HasOne("DCarMarketplace.Models.Anuncio", "Anuncio")
-                        .WithMany()
-                        .HasForeignKey("AnuncioId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("DCarMarketplace.Models.Anuncio", null)
                         .WithMany("Visitas")
-                        .HasForeignKey("AnuncioId1");
+                        .HasForeignKey("AnuncioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("DCarMarketplace.Models.Comprador", "Comprador")
                         .WithMany("VisitasAgendadas")
@@ -821,14 +790,10 @@ namespace DCarMarketplace.Data.Migrations
             modelBuilder.Entity("DCarMarketplace.Models.Compra", b =>
                 {
                     b.HasOne("DCarMarketplace.Models.Anuncio", "Anuncio")
-                        .WithOne()
-                        .HasForeignKey("DCarMarketplace.Models.Compra", "AnuncioId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("DCarMarketplace.Models.Anuncio", null)
                         .WithOne("Compra")
-                        .HasForeignKey("DCarMarketplace.Models.Compra", "AnuncioId1");
+                        .HasForeignKey("DCarMarketplace.Models.Compra", "AnuncioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("DCarMarketplace.Models.Comprador", "Comprador")
                         .WithMany("Compras")
@@ -854,17 +819,13 @@ namespace DCarMarketplace.Data.Migrations
 
             modelBuilder.Entity("DCarMarketplace.Models.FiltroFavorito", b =>
                 {
-                    b.HasOne("DCarMarketplace.Models.Comprador", null)
+                    b.HasOne("DCarMarketplace.Models.Comprador", "Comprador")
                         .WithMany("FiltrosFavoritos")
-                        .HasForeignKey("CompradorId");
-
-                    b.HasOne("DCarMarketplace.Models.Utilizador", "Utilizador")
-                        .WithMany()
-                        .HasForeignKey("UtilizadorId")
+                        .HasForeignKey("CompradorId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Utilizador");
+                    b.Navigation("Comprador");
                 });
 
             modelBuilder.Entity("DCarMarketplace.Models.HistoricoAcaoAdmin", b =>
@@ -892,9 +853,11 @@ namespace DCarMarketplace.Data.Migrations
 
             modelBuilder.Entity("DCarMarketplace.Models.MarcaFavorita", b =>
                 {
-                    b.HasOne("DCarMarketplace.Models.Comprador", null)
+                    b.HasOne("DCarMarketplace.Models.Comprador", "Comprador")
                         .WithMany("MarcasFavoritas")
-                        .HasForeignKey("CompradorId");
+                        .HasForeignKey("CompradorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("DCarMarketplace.Models.Marca", "Marca")
                         .WithMany("Favoritos")
@@ -902,15 +865,9 @@ namespace DCarMarketplace.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("DCarMarketplace.Models.Utilizador", "Utilizador")
-                        .WithMany()
-                        .HasForeignKey("UtilizadorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Navigation("Comprador");
 
                     b.Navigation("Marca");
-
-                    b.Navigation("Utilizador");
                 });
 
             modelBuilder.Entity("DCarMarketplace.Models.Modelo", b =>
@@ -927,14 +884,10 @@ namespace DCarMarketplace.Data.Migrations
             modelBuilder.Entity("DCarMarketplace.Models.Reserva", b =>
                 {
                     b.HasOne("DCarMarketplace.Models.Anuncio", "Anuncio")
-                        .WithMany()
-                        .HasForeignKey("AnuncioId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("DCarMarketplace.Models.Anuncio", null)
                         .WithMany("Reservas")
-                        .HasForeignKey("AnuncioId1");
+                        .HasForeignKey("AnuncioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("DCarMarketplace.Models.Comprador", "Comprador")
                         .WithMany("Reservas")

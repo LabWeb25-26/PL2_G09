@@ -4,22 +4,29 @@
     ViewData["Title"] = "Gestão de Utilizadores";
 }
 
-<div class="container mt-4">
-    <h2 class="mb-4 text-danger fw-bold"><i class="bi bi-shield-lock"></i> Backoffice</h2>
+<div class="container mt-5">
 
-    <div class="card shadow-sm border-0">
-        <div class="card-header bg-white py-3">
-            <h5 class="mb-0">Utilizadores Registados</h5>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-danger mb-0"><i class="bi bi-people-fill"></i> Gestão de Utilizadores</h2>
+            <p class="text-muted mb-0">Administre as contas, permissões e acessos do sistema.</p>
         </div>
-        <div class="card-body p-0">
+
+        <a asp-action="CreateAdmin" class="btn btn-danger shadow-sm fw-bold px-4 py-2">
+            <i class="bi bi-person-plus-fill me-2"></i> Criar Administrador
+        </a>
+    </div>
+
+    <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+        <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
+                <thead class="bg-light text-uppercase small fw-bold text-muted">
                     <tr>
-                        <th class="ps-4">Nome / Email</th>
-                        <th>Tipo</th>
-                        <th>Estado</th>
-                        <th>Aprovação</th>
-                        <th>Ações</th>
+                        <th class="ps-4 py-3">Utilizador</th>
+                        <th>Perfil</th>
+                        <th>Estado Conta</th>
+                        <th>Estado Vendedor</th>
+                        <th class="text-end pe-4">Ações</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -27,25 +34,33 @@
                     {
                         <tr>
                             <td class="ps-4">
-                                <div class="fw-bold">@user.Nome</div>
-                                <div class="text-muted small">@user.Email</div>
+                                <div class="d-flex align-items-center">
+                                    <div class="rounded-circle bg-light d-flex justify-content-center align-items-center me-3 text-secondary fw-bold border"
+                                         style="width: 40px; height: 40px;">
+                                        @(user.Nome?.Substring(0, 1).ToUpper() ?? "U")
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold text-dark">@user.Nome</div>
+                                        <div class="small text-muted">@user.Email</div>
+                                    </div>
+                                </div>
                             </td>
+
                             <td>
                                 @if (user.Vendedor != null)
                                 {
-                                    <span class="badge bg-info text-dark">Vendedor</span>
+                                    <span class="badge bg-primary bg-opacity-10 text-primary border border-primary px-3">Vendedor</span>
                                 }
                                 else if (user.Comprador != null)
                                 {
-
-                                    <span class="badge bg-secondary">Comprador</span>
+                                    <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary px-3">Comprador</span>
                                 }
                                 else
                                 {
-
-                                    <span class="badge bg-danger">Admin</span>
+                                    <span class="badge bg-danger text-white px-3 shadow-sm">Admin</span>
                                 }
                             </td>
+
                             <td>
                                 @if (user.EstadoConta == "ativo")
                                 {
@@ -56,16 +71,21 @@
                                     <span class="text-danger small fw-bold"><i class="bi bi-ban"></i> Bloqueado</span>
                                 }
                             </td>
+
                             <td>
                                 @if (user.Vendedor != null)
                                 {
                                     if (user.Vendedor.EstadoAprovacao == "pendente")
                                     {
-                                        <span class="badge bg-warning text-dark">Pendente</span>
+                                        <span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split"></i> Pendente</span>
+                                    }
+                                    else if (user.Vendedor.EstadoAprovacao == "aprovado")
+                                    {
+                                        <span class="text-success small fw-bold">Aprovado</span>
                                     }
                                     else
                                     {
-                                        <span class="badge bg-success">Aprovado</span>
+                                        <span class="text-danger small fw-bold">Rejeitado</span>
                                     }
                                 }
                                 else
@@ -73,39 +93,73 @@
                                     <span class="text-muted">-</span>
                                 }
                             </td>
-                            <td>
-                                <div class="d-flex gap-2">
+
+                            <td class="text-end pe-4">
+                                <div class="d-flex justify-content-end gap-2">
+
+                                    <a asp-action="EditUser" asp-route-id="@user.Id" class="btn btn-sm btn-outline-primary" title="Editar Perfil">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </a>
+
                                     @if (user.Vendedor != null && user.Vendedor.EstadoAprovacao == "pendente")
                                     {
                                         <form asp-action="AprovarVendedor" method="post">
                                             <input type="hidden" name="id" value="@user.Id" />
-                                            <button type="submit" class="btn btn-sm btn-success" title="Aprovar">
+                                            <button type="submit" class="btn btn-sm btn-success fw-bold shadow-sm" title="Aprovar Registo">
                                                 <i class="bi bi-check-lg"></i>
                                             </button>
                                         </form>
                                     }
 
-                                    @if (user.UserName != User.Identity.Name)
+                                    @if (user.UserName != User.Identity.Name) // Não bloquear o próprio admin
                                     {
-                                        <form asp-action="AlternarBloqueio" method="post">
-                                            <input type="hidden" name="id" value="@user.Id" />
-                                            @if (user.EstadoConta == "ativo")
-                                            {
-                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Bloquear">
-                                                    <i class="bi bi-lock-fill"></i>
-                                                </button>
-                                            }
-                                            else
-                                            {
-                                                <button type="submit" class="btn btn-sm btn-outline-success" title="Desbloquear">
+                                        if (user.EstadoConta == "ativo")
+                                        {
+                                            <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#modalBloqueio-@user.Id" title="Bloquear Conta">
+                                                <i class="bi bi-lock-fill"></i>
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <form asp-action="BloquearUser" method="post">
+                                                <input type="hidden" name="id" value="@user.Id" />
+                                                <button type="submit" class="btn btn-sm btn-outline-success" title="Desbloquear Conta">
                                                     <i class="bi bi-unlock-fill"></i>
                                                 </button>
-                                            }
-                                        </form>
+                                            </form>
+                                        }
                                     }
                                 </div>
                             </td>
                         </tr>
+
+                        <div class="modal fade" id="modalBloqueio-@user.Id" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content rounded-4 border-0">
+                                    <div class="modal-header bg-danger text-white">
+                                        <h5 class="modal-title fw-bold"><i class="bi bi-exclamation-triangle-fill me-2"></i>Bloquear Utilizador</h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <form asp-action="BloquearUser" method="post">
+                                        <div class="modal-body p-4">
+                                            <input type="hidden" name="id" value="@user.Id" />
+
+                                            <p class="fw-bold text-dark">Vai bloquear o acesso a: <span class="text-danger">@user.Nome</span></p>
+                                            <p class="text-muted small">O utilizador deixará de conseguir entrar na plataforma até ser desbloqueado manualmente.</p>
+
+                                            <div class="form-group mt-3">
+                                                <label class="form-label fw-bold small text-uppercase">Motivo do Bloqueio (Obrigatório)</label>
+                                                <textarea name="motivo" class="form-control" rows="3" required placeholder="Ex: Comportamento inadequado, fraude..."></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer border-0 pt-0 pb-4 px-4">
+                                            <button type="button" class="btn btn-light fw-bold" data-bs-dismiss="modal">Cancelar</button>
+                                            <button type="submit" class="btn btn-danger fw-bold px-4">Confirmar Bloqueio</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
                     }
                 </tbody>
             </table>

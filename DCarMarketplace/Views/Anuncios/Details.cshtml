@@ -23,7 +23,28 @@
 
         <div class="col-lg-8">
 
-            <div class="card border-0 rounded-4 overflow-hidden mb-3 bg-black shadow-sm">
+            <div class="card border-0 rounded-4 overflow-hidden mb-3 bg-black shadow-sm position-relative">
+
+                @if (Model.Estado != "ativo")
+                {
+                    <div class="position-absolute top-0 start-0 m-3 z-3">
+                        @if (Model.Estado == "reservado")
+                        {
+                            <span class="badge bg-info text-dark fs-6 shadow"><i class="bi bi-clock"></i> RESERVADO</span>
+                        }
+                        else if (Model.Estado == "vendido")
+                        {
+
+                            <span class="badge bg-danger fs-6 shadow"><i class="bi bi-tag-fill"></i> VENDIDO</span>
+                        }
+                        else if (Model.Estado == "pausado")
+                        {
+
+                            <span class="badge bg-warning text-dark fs-6 shadow"><i class="bi bi-pause-circle"></i> PAUSADO</span>
+                        }
+                    </div>
+                }
+
                 @if (listaImagens.Length > 0)
                 {
                     <div id="carroCarousel" class="carousel slide" data-bs-interval="false">
@@ -220,14 +241,6 @@
                             <strong>@Model.Carro.Cilindrada cm³</strong>
                         </div>
                     </div>
-
-                    <div class="col-12">
-                        <div class="p-2 border rounded-3 bg-light h-100 d-flex align-items-center justify-content-center gap-2">
-                            <i class="bi bi-tag text-danger"></i>
-                            <span class="text-muted small text-uppercase">Categoria:</span>
-                            <strong>@Model.Carro.Segmento</strong>
-                        </div>
-                    </div>
                 </div>
 
                 <div class="d-flex align-items-center mb-4 p-3 bg-light rounded-3 border">
@@ -246,29 +259,51 @@
                         // SE FOR O DONO DO ANÚNCIO OU ADMIN
                         if (User.IsInRole("Administrador") || (Model.Vendedor != null && Model.Vendedor.Utilizador.UserName == User.Identity.Name))
                         {
-                            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning btn-lg fw-bold text-white">
-                                <i class="bi bi-pencil-square me-2"></i> Editar Anúncio
-                            </a>
-                            <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger btn-lg fw-bold">
-                                <i class="bi bi-trash me-2"></i> Remover
-                            </a>
+                            <div class="dropdown">
+                                <button class="btn btn-dark w-100 dropdown-toggle py-2 fw-bold" type="button" data-bs-toggle="dropdown">
+                                    <i class="bi bi-gear-fill me-2"></i> Gerir Estado (@Model.Estado.ToUpper())
+                                </button>
+                                <ul class="dropdown-menu w-100 shadow">
+                                    <li><h6 class="dropdown-header">Definir como:</h6></li>
+                                    <li><form asp-action="AtualizarEstado" asp-route-id="@Model.Id" method="post"><input type="hidden" name="novoEstado" value="ativo" /><button class="dropdown-item text-success fw-bold">Ativo</button></form></li>
+                                    <li><form asp-action="AtualizarEstado" asp-route-id="@Model.Id" method="post"><input type="hidden" name="novoEstado" value="reservado" /><button class="dropdown-item text-info fw-bold">Reservado</button></form></li>
+                                    <li><form asp-action="AtualizarEstado" asp-route-id="@Model.Id" method="post"><input type="hidden" name="novoEstado" value="pausado" /><button class="dropdown-item text-warning fw-bold">Pausado</button></form></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><form asp-action="AtualizarEstado" asp-route-id="@Model.Id" method="post"><input type="hidden" name="novoEstado" value="vendido" /><button class="dropdown-item text-danger fw-bold">Vendido</button></form></li>
+                                </ul>
+                            </div>
+
+                            <div class="d-flex gap-2">
+                                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning flex-grow-1 fw-bold text-white">
+                                    Editar
+                                </a>
+                                <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger flex-grow-0">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </div>
                         }
                         // SE FOR COMPRADOR
                         else if (User.IsInRole("Comprador"))
                         {
-                            <button class="btn btn-dcar btn-lg fw-bold py-3 shadow-sm" onclick="alert('Mensagem enviada!')">
-                                <i class="bi bi-chat-dots-fill me-2"></i> Enviar Mensagem
-                            </button>
-                            <button class="btn btn-outline-dark btn-lg fw-bold py-3">
-                                <i class="bi bi-calendar-check me-2"></i> Agendar Visita
-                            </button>
-                        }
-                        // SE FOR VENDEDOR (mas não o dono)
-                        else
-                        {
-                            <div class="alert alert-warning text-center small">
-                                Vendedores não podem comprar carros de outros vendedores.
-                            </div>
+                            if (Model.Estado == "ativo")
+                            {
+                                <a asp-controller="Interacoes" asp-action="Checkout" asp-route-id="@Model.Id" class="btn btn-success btn-lg fw-bold py-3 shadow-sm">
+                                    <i class="bi bi-cart-check me-2"></i> Comprar Agora
+                                </a>
+                                <button class="btn btn-dcar btn-lg fw-bold py-3 shadow-sm" onclick="alert('Mensagem enviada!')">
+                                    <i class="bi bi-chat-dots-fill me-2"></i> Enviar Mensagem
+                                </button>
+
+                                <button type="button" class="btn btn-outline-dark btn-lg fw-bold py-3" data-bs-toggle="modal" data-bs-target="#modalAcoes">
+                                    <i class="bi bi-calendar-check me-2"></i> Agendar / Reserva
+                                </button>
+                            }
+                            else
+                            {
+                                <div class="alert alert-secondary text-center fw-bold">
+                                    Veículo indisponível para compra.
+                                </div>
+                            }
                         }
                     }
                     else
@@ -288,6 +323,50 @@
         </div>
     </div>
 </div>
+<div class="modal fade" id="modalAcoes" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold" id="modalLabel">O que deseja fazer?</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+
+                <div class="card mb-3 border-danger border-2 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="fw-bold text-danger"><i class="bi bi-bookmark-check-fill me-2"></i> Reservar Agora</h5>
+                        <p class="small text-muted mb-3">O veículo ficará reservado para si durante <strong>3 dias</strong>.</p>
+
+                        <form asp-controller="Interacoes" asp-action="Reservar" method="post">
+                            <input type="hidden" name="anuncioId" value="@Model.Id" />
+                            <button type="submit" class="btn btn-danger w-100 fw-bold">Confirmar Reserva</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="text-center text-muted my-2 fw-bold">- OU -</div>
+
+                <div class="card border-0 bg-light mt-3">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-3"><i class="bi bi-calendar-event me-2"></i> Agendar Visita</h5>
+
+                        <form asp-controller="Interacoes" asp-action="MarcarVisita" method="post">
+                            <input type="hidden" name="anuncioId" value="@Model.Id" />
+
+                            <div class="mb-3">
+                                <label class="form-label small text-muted">Escolha a data e hora:</label>
+                                <input type="datetime-local" name="dataVisita" class="form-control" required />
+                            </div>
+
+                            <button type="submit" class="btn btn-dark w-100 fw-bold">Solicitar Visita</button>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
 
 <script>
     function mudarSlide(index, element) {
@@ -295,10 +374,7 @@
         var bsCarousel = new bootstrap.Carousel(myCarousel);
         bsCarousel.to(index);
 
-        // Limpar bordas de todas as miniaturas
         document.querySelectorAll('img[onclick^="mudarSlide"]').forEach(img => img.style.borderColor = "#dee2e6");
-
-        // Adicionar borda vermelha à selecionada
         element.style.borderColor = "#C92525";
     }
 </script>

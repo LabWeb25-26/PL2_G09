@@ -39,10 +39,8 @@ namespace DCarMarketplace.Controllers
             int? kmMin, int? kmMax, string combustivel, string caixa,
             string segmento, string localizacao)
         {
-            // Carregar marcas para a sidebar
             ViewBag.ListaMarcas = await _context.Marcas.OrderBy(m => m.Nome).ToListAsync();
 
-            // Carregar Favoritos
             ViewBag.FavoritosIds = new List<int>();
             if (User.Identity.IsAuthenticated)
             {
@@ -53,7 +51,6 @@ namespace DCarMarketplace.Controllers
                     .ToListAsync();
             }
 
-            // Query Base
             var query = _context.Anuncios
                 .Include(a => a.Carro).ThenInclude(c => c.Modelo).ThenInclude(m => m.Marca)
                 .Include(a => a.Carro).ThenInclude(c => c.Combustivel)
@@ -132,7 +129,7 @@ namespace DCarMarketplace.Controllers
         }
 
         // =============================================================
-        // 3. ÁREA DO VENDEDOR ("MINHA GARAGEM")
+        // 3. MEUS ANÚNCIOS (VENDEDOR)
         // =============================================================
         [Authorize(Roles = "Vendedor")]
         public async Task<IActionResult> MeusAnuncios()
@@ -179,6 +176,7 @@ namespace DCarMarketplace.Controllers
                 string stringNomesImagens = null;
                 List<string> listaNomes = new List<string>();
 
+                // Upload de Imagens
                 if (model.ImagensFicheiros != null && model.ImagensFicheiros.Count > 0)
                 {
                     if (model.ImagensFicheiros.Count > 9)
@@ -208,6 +206,7 @@ namespace DCarMarketplace.Controllers
                     stringNomesImagens = string.Join(";", listaNomes);
                 }
 
+                // Criar Carro
                 var carro = new Carro
                 {
                     Matricula = model.Matricula,
@@ -226,6 +225,7 @@ namespace DCarMarketplace.Controllers
                 _context.Carros.Add(carro);
                 await _context.SaveChangesAsync();
 
+                // Criar Anúncio
                 var anuncio = new Anuncio
                 {
                     Titulo = model.Titulo,
@@ -243,6 +243,7 @@ namespace DCarMarketplace.Controllers
 
                 return RedirectToAction(nameof(MeusAnuncios));
             }
+
             CarregarListasViewData(model);
             return View(model);
         }
@@ -254,7 +255,43 @@ namespace DCarMarketplace.Controllers
             ViewData["ModeloId"] = new SelectList(_context.Modelos, "Id", "Nome", model?.ModeloId);
             ViewData["ListaAnos"] = new SelectList(GerarListaAnos(), model?.Ano);
         }
+        // =============================================================
+        // LISTAGENS ESPECÍFICAS (RF-20 e RF-21)
+        // =============================================================
 
+        [Authorize(Roles = "Vendedor")]
+        public async Task<IActionResult> VeiculosReservados()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Challenge();
+
+            var anuncios = await _context.Anuncios
+                .Include(a => a.Carro).ThenInclude(c => c.Modelo).ThenInclude(m => m.Marca)
+                .Include(a => a.Carro).ThenInclude(c => c.Combustivel)
+                .Include(a => a.Vendedor).ThenInclude(v => v.Utilizador)
+                .Where(a => a.VendedorId == user.Id && a.Estado == "reservado")
+                .ToListAsync();
+
+            ViewData["Title"] = "Veículos Reservados";
+            return View("Index", anuncios); // Reutiliza a View Index
+        }
+
+        [Authorize(Roles = "Vendedor")]
+        public async Task<IActionResult> VeiculosVendidos()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Challenge();
+
+            var anuncios = await _context.Anuncios
+                .Include(a => a.Carro).ThenInclude(c => c.Modelo).ThenInclude(m => m.Marca)
+                .Include(a => a.Carro).ThenInclude(c => c.Combustivel)
+                .Include(a => a.Vendedor).ThenInclude(v => v.Utilizador)
+                .Where(a => a.VendedorId == user.Id && a.Estado == "vendido")
+                .ToListAsync();
+
+            ViewData["Title"] = "Histórico de Vendas";
+            return View("Index", anuncios); // Reutiliza a View Index
+        }
         // =============================================================
         // 5. EDITAR ANÚNCIO
         // =============================================================
@@ -272,6 +309,7 @@ namespace DCarMarketplace.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (anuncio.VendedorId != user.Id && !User.IsInRole("Administrador")) return Forbid();
 
+            // Converter para ViewModel
             var viewModel = new EditarAnuncioViewModel
             {
                 Id = anuncio.Id,
@@ -319,11 +357,13 @@ namespace DCarMarketplace.Controllers
 
                 if (anuncioOriginal == null) return NotFound();
 
+                // Atualizar Anúncio
                 anuncioOriginal.Titulo = model.Titulo;
                 anuncioOriginal.Descricao = model.Descricao;
                 anuncioOriginal.Preco = model.Preco;
                 anuncioOriginal.Localizacao = model.Localizacao;
 
+                // Atualizar Carro
                 if (anuncioOriginal.Carro != null)
                 {
                     anuncioOriginal.Carro.Matricula = model.Matricula;
@@ -340,6 +380,7 @@ namespace DCarMarketplace.Controllers
                     anuncioOriginal.Carro.ModeloId = model.ModeloId;
                 }
 
+                // Adicionar Novas Fotos
                 if (model.NovasFotos != null && model.NovasFotos.Count > 0)
                 {
                     string pastaUpload = Path.Combine(_webHostEnvironment.WebRootPath, "imagens_carros");
@@ -388,13 +429,14 @@ namespace DCarMarketplace.Controllers
         }
 
         // =============================================================
-        // 6. APAGAR (CORRIGIDO PARA EVITAR ERRO DE FK)
+        // 6. APAGAR ANÚNCIO (CORRIGIDO)
         // =============================================================
         [Authorize(Roles = "Vendedor")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null) return NotFound();
 
+            // IMPORTANTE: Include para não dar erro na página de Delete
             var anuncio = await _context.Anuncios
                 .Include(a => a.Carro).ThenInclude(c => c.Modelo).ThenInclude(m => m.Marca)
                 .Include(a => a.Vendedor).ThenInclude(v => v.Utilizador)
@@ -417,14 +459,14 @@ namespace DCarMarketplace.Controllers
 
             if (anuncio != null)
             {
-                // 1. Remover Favoritos e Reservas associados para evitar conflito FK
+                // 1. Apagar Favoritos e Reservas antes para evitar erro de FK
                 var favoritos = _context.AnunciosFavoritos.Where(f => f.AnuncioId == id);
                 _context.AnunciosFavoritos.RemoveRange(favoritos);
 
                 var reservas = _context.Reservas.Where(r => r.AnuncioId == id);
                 _context.Reservas.RemoveRange(reservas);
 
-                // 2. Remover Carro e Anúncio
+                // 2. Apagar Carro e Anúncio
                 _context.Carros.Remove(anuncio.Carro);
                 _context.Anuncios.Remove(anuncio);
 
@@ -434,7 +476,29 @@ namespace DCarMarketplace.Controllers
         }
 
         // =============================================================
-        // 7. APIs AJAX
+        // 7. GESTÃO DE ESTADO (A TUA FUNCIONALIDADE)
+        // =============================================================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Vendedor")]
+        public async Task<IActionResult> AtualizarEstado(int id, string novoEstado)
+        {
+            var anuncio = await _context.Anuncios.FindAsync(id);
+            if (anuncio == null) return NotFound();
+
+            var user = await _userManager.GetUserAsync(User);
+            if (anuncio.VendedorId != user.Id && !User.IsInRole("Administrador")) return Forbid();
+
+            if (new[] { "ativo", "reservado", "vendido", "pausado" }.Contains(novoEstado))
+            {
+                anuncio.Estado = novoEstado;
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(MeusAnuncios));
+        }
+
+        // =============================================================
+        // 8. APIs AJAX e UTILITÁRIOS
         // =============================================================
 
         private bool AnuncioExists(int id) => _context.Anuncios.Any(e => e.Id == id);

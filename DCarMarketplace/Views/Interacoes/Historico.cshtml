@@ -1,0 +1,119 @@
+﻿@model DCarMarketplace.Models.ViewModels.HistoricoCompradorViewModel
+
+@{
+    ViewData["Title"] = "Minhas Atividades";
+}
+
+<div class="container mt-5 mb-5">
+    <h2 class="fw-bold mb-4"><i class="bi bi-person-workspace text-danger"></i> O Meu Histórico</h2>
+
+    <div class="card shadow-sm border-0 rounded-4 mb-5 border-start border-5 border-success">
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0 fw-bold text-success"><i class="bi bi-bag-check-fill me-2"></i>Compras Realizadas</h5>
+        </div>
+        <div class="card-body">
+            @if (!Model.MinhasCompras.Any())
+            {
+                <p class="text-muted text-center py-3">Ainda não comprou nenhum veículo.</p>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr class="text-uppercase small text-muted">
+                                <th>Veículo</th>
+                                <th>Data</th>
+                                <th>Valor</th>
+                                <th>Estado</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.MinhasCompras)
+                            {
+                                <tr>
+                                    <td class="fw-bold">@item.Anuncio.Carro.Modelo.Marca.Nome @item.Anuncio.Carro.Modelo.Nome</td>
+                                    <td>@item.Data.ToShortDateString()</td>
+                                    <td class="text-danger fw-bold">@item.Preco.ToString("N0") €</td>
+                                    <td><span class="badge bg-success">@item.EstadoPagamento.ToUpper()</span></td>
+                                    <td class="text-end"><a asp-controller="Anuncios" asp-action="Details" asp-route-id="@item.AnuncioId" class="btn btn-sm btn-outline-dark">Ver Anúncio</a></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0 rounded-4 h-100 border-start border-5 border-info">
+                <div class="card-header bg-white py-3"><h5 class="mb-0 fw-bold text-info"><i class="bi bi-bookmark-fill me-2"></i>Reservas</h5></div>
+                <div class="card-body">
+                    @if (!Model.MinhasReservas.Any())
+                    {
+                        <p class="text-muted text-center mt-3">Sem reservas.</p>
+                    }
+                    else
+                    {
+                        <div class="list-group list-group-flush">
+                            @foreach (var item in Model.MinhasReservas)
+                            {
+                                <div class="list-group-item px-0">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="fw-bold mb-0">@item.Anuncio.Carro.Modelo.Marca.Nome @item.Anuncio.Carro.Modelo.Nome</h6>
+                                            <small class="text-muted">Expira: @item.PrazoExpiracao?.ToShortDateString()</small>
+                                        </div>
+                                        @if (item.Estado == "ativa")
+                                        {
+                                            <form asp-action="CancelarReserva" method="post"><input type="hidden" name="id" value="@item.Id" /><button class="btn btn-sm btn-outline-danger">Cancelar</button></form>
+                                        }
+                                        else
+                                        {
+
+                                            <span class="badge bg-secondary">@item.Estado</span>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0 rounded-4 h-100 border-start border-5 border-warning">
+                <div class="card-header bg-white py-3"><h5 class="mb-0 fw-bold text-warning"><i class="bi bi-calendar-event-fill me-2"></i>Visitas</h5></div>
+                <div class="card-body">
+                    @if (!Model.MinhasVisitas.Any())
+                    {
+                        <p class="text-muted text-center mt-3">Sem visitas agendadas.</p>
+                    }
+                    else
+                    {
+                        <div class="list-group list-group-flush">
+                            @foreach (var item in Model.MinhasVisitas)
+                            {
+                                <div class="list-group-item px-0">
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-light rounded p-2 text-center me-3 border">
+                                            <div class="fw-bold text-dark">@item.DataVisita.Day</div><div class="small text-uppercase" style="font-size:10px;">@item.DataVisita.ToString("MMM")</div>
+                                        </div>
+                                        <div>
+                                            <h6 class="fw-bold mb-0">@item.Anuncio.Carro.Modelo.Marca.Nome</h6>
+                                            <small class="text-muted"><i class="bi bi-clock"></i> @item.DataVisita.ToShortTimeString() • <span class="text-primary">@item.Estado</span></small>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
