@@ -50,6 +50,14 @@
                         }
                     </ul>
 
+                    <ul class="navbar-nav flex-grow-1 align-items-center">
+                    </ul>
+
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        @await Component.InvokeAsync("Notificacoes")
+                    }
+
                     <partial name="_LoginPartial" />
                 </div>
             </div>

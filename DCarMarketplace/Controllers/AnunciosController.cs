@@ -241,8 +241,59 @@ namespace DCarMarketplace.Controllers
                 _context.Anuncios.Add(anuncio);
                 await _context.SaveChangesAsync();
 
+                // =====================================================
+                // NOVO: NOTIFICAR SEGUIDORES DA MARCA (RF-6)
+                // =====================================================
+
+                // 1. Descobrir a marca do carro criado
+                // Nota: Temos de ir buscar o modelo para saber a marca, pois o 'carro' só tem IDs
+                var modelo = await _context.Modelos
+                    .Include(m => m.Marca)
+                    .FirstOrDefaultAsync(m => m.Id == carro.ModeloId);
+
+                if (modelo != null)
+                {
+                    int marcaId = modelo.MarcaId;
+                    string nomeMarca = modelo.Marca.Nome;
+
+                    // 2. Encontrar todos os compradores que seguem esta marca
+                    var seguidores = await _context.MarcasFavoritas
+                        .Where(mf => mf.MarcaId == marcaId)
+                        .Select(mf => mf.UtilizadorId)
+                        .ToListAsync();
+
+                    // 3. Criar notificação para cada seguidor
+                    if (seguidores.Any())
+                    {
+                        var notificacoes = new List<Notificacao>();
+                        foreach (var userId in seguidores)
+                        {
+                            // Não notificar o próprio vendedor se ele seguir a marca
+                            if (userId != user.Id)
+                            {
+                                notificacoes.Add(new Notificacao
+                                {
+                                    UtilizadorId = userId,
+                                    Mensagem = $"Nova oportunidade! Chegou um {nomeMarca} {modelo.Nome} ao mercado.",
+                                    Link = $"/Anuncios/Details/{anuncio.Id}",
+                                    Data = DateTime.Now,
+                                    Lida = false
+                                });
+                            }
+                        }
+
+                        if (notificacoes.Any())
+                        {
+                            _context.Notificacoes.AddRange(notificacoes);
+                            await _context.SaveChangesAsync();
+                        }
+                    }
+                }
+                // =====================================================
+
                 return RedirectToAction(nameof(MeusAnuncios));
-            }
+            
+        }
 
             CarregarListasViewData(model);
             return View(model);

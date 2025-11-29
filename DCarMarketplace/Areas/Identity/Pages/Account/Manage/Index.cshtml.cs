@@ -1,15 +1,12 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-#nullable disable
-
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
-using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using DCarMarketplace.Data;
 using DCarMarketplace.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
 
 namespace DCarMarketplace.Areas.Identity.Pages.Account.Manage
 {
@@ -17,49 +14,49 @@ namespace DCarMarketplace.Areas.Identity.Pages.Account.Manage
     {
         private readonly UserManager<Utilizador> _userManager;
         private readonly SignInManager<Utilizador> _signInManager;
+        private readonly ApplicationDbContext _context;
 
         public IndexModel(
             UserManager<Utilizador> userManager,
-            SignInManager<Utilizador> signInManager)
+            SignInManager<Utilizador> signInManager,
+            ApplicationDbContext context)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _context = context;
         }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         public string Username { get; set; }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         [TempData]
         public string StatusMessage { get; set; }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         [BindProperty]
         public InputModel Input { get; set; }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         public class InputModel
         {
-            /// <summary>
-            ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-            ///     directly from your code. This API may change or be removed in future releases.
-            /// </summary>
+            // --- NOVO CAMPO: NOME ---
+            [Required(ErrorMessage = "O nome é obrigatório.")]
+            [Display(Name = "Nome Completo")]
+            public string Name { get; set; }
+
             [Phone]
-            [Display(Name = "Phone number")]
+            [Display(Name = "Telemóvel")]
             public string PhoneNumber { get; set; }
+
+            [Display(Name = "Morada Completa")]
+            public string Morada { get; set; }
+
+            [Display(Name = "NIF (Nº Contribuinte)")]
+            public string NIF { get; set; }
+
+            [Display(Name = "Tipo de Vendedor")]
+            public string Tipo { get; set; }
         }
+
+        public bool IsVendedor { get; set; }
+        public bool IsComprador { get; set; }
 
         private async Task LoadAsync(Utilizador user)
         {
@@ -70,17 +67,36 @@ namespace DCarMarketplace.Areas.Identity.Pages.Account.Manage
 
             Input = new InputModel
             {
+                Name = user.Nome, // Carrega o nome atual da BD
                 PhoneNumber = phoneNumber
             };
+
+            if (await _userManager.IsInRoleAsync(user, "Vendedor"))
+            {
+                IsVendedor = true;
+                var vendedor = await _context.Vendedores.FindAsync(user.Id);
+                if (vendedor != null)
+                {
+                    Input.Morada = vendedor.Morada;
+                    Input.NIF = vendedor.NIF;
+                    Input.Tipo = vendedor.Tipo;
+                }
+            }
+            else if (await _userManager.IsInRoleAsync(user, "Comprador"))
+            {
+                IsComprador = true;
+                var comprador = await _context.Compradores.FindAsync(user.Id);
+                if (comprador != null)
+                {
+                    Input.Morada = comprador.Morada;
+                }
+            }
         }
 
         public async Task<IActionResult> OnGetAsync()
         {
             var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-            {
-                return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
-            }
+            if (user == null) return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
 
             await LoadAsync(user);
             return Page();
@@ -89,10 +105,7 @@ namespace DCarMarketplace.Areas.Identity.Pages.Account.Manage
         public async Task<IActionResult> OnPostAsync()
         {
             var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-            {
-                return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
-            }
+            if (user == null) return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
 
             if (!ModelState.IsValid)
             {
@@ -100,19 +113,52 @@ namespace DCarMarketplace.Areas.Identity.Pages.Account.Manage
                 return Page();
             }
 
+            // 1. Atualizar NOME (Novo)
+            if (Input.Name != user.Nome)
+            {
+                user.Nome = Input.Name;
+                await _userManager.UpdateAsync(user);
+            }
+
+            // 2. Atualizar TELEFONE
             var phoneNumber = await _userManager.GetPhoneNumberAsync(user);
             if (Input.PhoneNumber != phoneNumber)
             {
                 var setPhoneResult = await _userManager.SetPhoneNumberAsync(user, Input.PhoneNumber);
                 if (!setPhoneResult.Succeeded)
                 {
-                    StatusMessage = "Unexpected error when trying to set phone number.";
+                    StatusMessage = "Erro ao atualizar número de telefone.";
                     return RedirectToPage();
                 }
             }
 
+            // 3. Atualizar DADOS ESPECÍFICOS (Vendedor/Comprador)
+            if (await _userManager.IsInRoleAsync(user, "Vendedor"))
+            {
+                var vendedor = await _context.Vendedores.FindAsync(user.Id);
+                if (vendedor != null)
+                {
+                    vendedor.Morada = Input.Morada;
+                    vendedor.NIF = Input.NIF;
+                    vendedor.Tipo = Input.Tipo;
+                    vendedor.Contactos = Input.PhoneNumber;
+                    _context.Update(vendedor);
+                }
+            }
+            else if (await _userManager.IsInRoleAsync(user, "Comprador"))
+            {
+                var comprador = await _context.Compradores.FindAsync(user.Id);
+                if (comprador != null)
+                {
+                    comprador.Morada = Input.Morada;
+                    comprador.Contactos = Input.PhoneNumber;
+                    _context.Update(comprador);
+                }
+            }
+
+            await _context.SaveChangesAsync();
             await _signInManager.RefreshSignInAsync(user);
-            StatusMessage = "Your profile has been updated";
+            StatusMessage = "O seu perfil foi atualizado com sucesso.";
             return RedirectToPage();
         }
     }

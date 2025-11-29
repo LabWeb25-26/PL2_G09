@@ -3,81 +3,160 @@
 @{
     ViewData["Title"] = "Perfil";
     var username = User.Identity.Name;
-    var iniciais = "U";
-    if (!string.IsNullOrEmpty(username) && username.Contains("@"))
-    {
-        iniciais = username.Substring(0, 2).ToUpper();
-    }
+    // Tenta usar o Nome guardado, se não houver, usa o username para as iniciais
+    var displayName = Model.Input?.Name ?? username;
+    var iniciais = (!string.IsNullOrEmpty(displayName)) ? displayName.Substring(0, 1).ToUpper() : "U";
 }
 
-<div class="card shadow-sm border-0 mb-4">
+<div class="card shadow-sm border-0 mb-4 rounded-4">
     <div class="card-body p-4 d-flex align-items-center">
-        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-4"
-             style="width: 80px; height: 80px; font-size: 2rem; font-weight: bold;">
+        <div class="rounded-circle bg-danger text-white d-flex align-items-center justify-content-center me-4 shadow-sm"
+             style="width: 80px; height: 80px; font-size: 2.5rem; font-weight: bold;">
             @iniciais
         </div>
 
         <div class="flex-grow-1">
-            <h3 class="mb-1 fw-bold">@username</h3>
-            <p class="text-muted mb-0">
-                <i class="bi bi-envelope"></i> @username &nbsp;|&nbsp;
-                <i class="bi bi-calendar3"></i> Membro do DCar
+            <h3 class="mb-1 fw-bold text-dark">@displayName</h3>
+            <p class="text-muted mb-0 small">
+                @if (Model.IsVendedor)
+                {
+                    <span class="badge bg-primary bg-opacity-10 text-primary border border-primary">Vendedor</span>
+                }
+                else if (Model.IsComprador)
+                {
+                    <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary">Comprador</span>
+                }
+                else
+                {
+                    <span class="badge bg-dark">Administrador</span>
+                }
+                &nbsp;|&nbsp; <i class="bi bi-envelope"></i> @username
             </p>
         </div>
 
-        <a asp-page="./ChangePassword" class="btn btn-outline-primary">
-            <i class="bi bi-key"></i> Mudar Password
+        <a asp-page="./ChangePassword" class="btn btn-outline-dark rounded-pill px-4">
+            <i class="bi bi-key-fill me-2"></i> Password
         </a>
     </div>
 </div>
 
-<div class="card shadow-sm border-0 mb-4 bg-light">
+<div class="card shadow-sm border-0 mb-4 bg-light rounded-4">
     <div class="card-body p-2">
         <nav class="nav nav-pills nav-fill">
-            <a class="nav-link active bg-white text-primary shadow-sm" href="#">
-                <i class="bi bi-person"></i> Definições
+            <a class="nav-link active bg-white text-danger shadow-sm fw-bold" href="#">
+                <i class="bi bi-person-gear me-2"></i> Definições
             </a>
 
-            @if (User.IsInRole("Vendedor"))
+            @if (Model.IsVendedor)
             {
-                <a class="nav-link text-muted" asp-controller="Anuncios" asp-action="MeusAnuncios">
-                    <i class="bi bi-car-front"></i> Meus Anúncios
+                <a class="nav-link text-muted fw-bold" asp-controller="Anuncios" asp-action="MeusAnuncios">
+                    <i class="bi bi-car-front-fill me-2"></i> Meus Anúncios
+                </a>
+                <a class="nav-link text-muted fw-bold" asp-controller="Anuncios" asp-action="VeiculosReservados">
+                    <i class="bi bi-clock-history me-2"></i> Reservados
+                </a>
+                <a class="nav-link text-muted fw-bold" asp-controller="Anuncios" asp-action="VeiculosVendidos">
+                    <i class="bi bi-tag-fill me-2"></i> Vendidos
                 </a>
             }
 
-            <a class="nav-link text-muted" href="#"><i class="bi bi-heart"></i> Favoritos</a>
-            <a class="nav-link text-muted" href="#"><i class="bi bi-clock-history"></i> Histórico</a>
+            @if (Model.IsComprador)
+            {
+                <a class="nav-link text-muted fw-bold" asp-controller="Interacoes" asp-action="Historico">
+                    <i class="bi bi-clock-history me-2"></i> Meu Histórico
+                </a>
+                <a class="nav-link text-muted fw-bold" asp-controller="Comprador" asp-action="MeusFiltros">
+                    <i class="bi bi-bookmark-star-fill me-2"></i> Pesquisas Salvas
+                </a>
+            }
         </nav>
     </div>
 </div>
 
-<div class="card shadow-sm border-0">
-    <div class="card-body p-4">
-        <h4 class="mb-3 fw-bold">Informações Pessoais</h4>
+<div class="card shadow-lg border-0 rounded-4">
+    <div class="card-header bg-white py-3 border-bottom">
+        <h5 class="mb-0 fw-bold text-danger"><i class="bi bi-person-lines-fill me-2"></i>Dados Pessoais</h5>
+    </div>
+    <div class="card-body p-5">
         <partial name="_StatusMessage" model="Model.StatusMessage" />
 
         <form id="profile-form" method="post">
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label asp-for="Username" class="form-label fw-bold">Email / Username</label>
-                    <input asp-for="Username" class="form-control bg-light" disabled />
+
+            <div class="row g-4">
+                <div class="col-12">
+                    <div class="form-floating">
+                        <input asp-for="Username" class="form-control bg-light" disabled />
+                        <label asp-for="Username">Email (Username)</label>
+                    </div>
                 </div>
 
                 <div class="col-md-6">
-                    <label asp-for="Input.PhoneNumber" class="form-label fw-bold">Telefone</label>
-                    <input asp-for="Input.PhoneNumber" class="form-control" placeholder="+351..." />
-                    <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
+                    <div class="form-floating">
+                        <input asp-for="Input.Name" class="form-control" placeholder="O seu nome" />
+                        <label asp-for="Input.Name">Nome Completo</label>
+                        <span asp-validation-for="Input.Name" class="text-danger small"></span>
+                    </div>
                 </div>
+
+                <div class="col-md-6">
+                    <div class="form-floating">
+                        <input asp-for="Input.PhoneNumber" class="form-control" placeholder="+351..." />
+                        <label asp-for="Input.PhoneNumber">Telemóvel</label>
+                        <span asp-validation-for="Input.PhoneNumber" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <div class="form-floating">
+                        <input asp-for="Input.Morada" class="form-control" placeholder="Sua morada..." />
+                        <label asp-for="Input.Morada">Morada Completa</label>
+                    </div>
+                </div>
+
+                @if (Model.IsVendedor)
+                {
+                    <div class="col-12"><hr class="text-muted opacity-25"></div>
+                    <div class="col-12"><h6 class="fw-bold text-muted mb-3">Dados Fiscais (Vendedor)</h6></div>
+
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <select asp-for="Input.Tipo" class="form-select">
+                                <option value="Particular">Particular</option>
+                                <option value="Empresa">Empresa</option>
+                            </select>
+                            <label asp-for="Input.Tipo">Tipo de Conta</label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <input asp-for="Input.NIF" class="form-control" placeholder="NIF" />
+                            <label asp-for="Input.NIF">NIF (Opcional)</label>
+                        </div>
+                    </div>
+                }
+
+                @if (Model.IsComprador)
+                {
+                    <div class="col-12">
+                        <div class="alert alert-light border d-flex align-items-center shadow-sm mt-2">
+                            <i class="bi bi-bell-fill text-warning fs-3 me-3"></i>
+                            <div>
+                                <strong>Preferências e Notificações</strong><br>
+                                <span class="small text-muted">Gerencie as marcas que segue para receber alertas.</span>
+                            </div>
+                            <a asp-controller="Comprador" asp-action="MinhasMarcas" class="btn btn-sm btn-outline-dark ms-auto fw-bold">
+                                Gerir Marcas
+                            </a>
+                        </div>
+                    </div>
+                }
             </div>
 
-            <div class="mb-4">
-                <label class="form-label fw-bold">Localização</label>
-                <input type="text" class="form-control" placeholder="A sua morada..." />
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-5">
+                <button id="update-profile-button" type="submit" class="btn btn-danger btn-lg px-5 fw-bold shadow-sm">
+                    Guardar Alterações
+                </button>
             </div>
-
-            <button id="update-profile-button" type="submit" class="btn btn-primary px-4 py-2">
-                Guardar Alterações
-            </button>
         </form>
     </div>
 </div>

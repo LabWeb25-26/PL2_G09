@@ -239,5 +239,30 @@ namespace DCarMarketplace.Controllers
 
             return View(historico);
         }
+
+        // POST: Validar Email Manualmente
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ConfirmarEmailManual(string id)
+        {
+            var user = await _context.Users.FindAsync(id);
+            if (user != null)
+            {
+                user.EmailConfirmed = true;
+
+                // Auditoria
+                _context.HistoricoAcoesAdmin.Add(new HistoricoAcaoAdmin
+                {
+                    AdminId = _userManager.GetUserId(User),
+                    AlvoUtilizadorId = user.Id,
+                    TipoAcao = "Validação Manual de Email",
+                    Motivo = "Utilizador não conseguia aceder ao email",
+                    Data = DateTime.Now
+                });
+
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(Index));
+        }
     }
 }

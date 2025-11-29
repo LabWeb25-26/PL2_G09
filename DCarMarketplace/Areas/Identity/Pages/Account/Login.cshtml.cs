@@ -1,37 +1,37 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-#nullable disable
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using DCarMarketplace.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
+using DCarMarketplace.Models; // Importante para o Utilizador
+using DCarMarketplace.Data;   // Importante para o DbContext
+using Microsoft.EntityFrameworkCore;
 
 namespace DCarMarketplace.Areas.Identity.Pages.Account
 {
+    [AllowAnonymous]
     public class LoginModel : PageModel
     {
+        private readonly UserManager<Utilizador> _userManager;
         private readonly SignInManager<Utilizador> _signInManager;
-        private readonly UserManager<Utilizador> _userManager; // <--- NOVO: Necessário para verificar o estado
         private readonly ILogger<LoginModel> _logger;
+        private readonly ApplicationDbContext _context; // Adicionado para ler o motivo
 
-        // Atualizei o construtor para receber o UserManager
         public LoginModel(SignInManager<Utilizador> signInManager,
-                          ILogger<LoginModel> logger,
-                          UserManager<Utilizador> userManager)
+            ILogger<LoginModel> logger,
+            UserManager<Utilizador> userManager,
+            ApplicationDbContext context)
         {
+            _userManager = userManager;
             _signInManager = signInManager;
             _logger = logger;
-            _userManager = userManager;
+            _context = context;
         }
 
         [BindProperty]
@@ -54,7 +54,7 @@ namespace DCarMarketplace.Areas.Identity.Pages.Account
             [DataType(DataType.Password)]
             public string Password { get; set; }
 
-            [Display(Name = "Remember me?")]
+            [Display(Name = "Lembrar de mim?")]
             public bool RememberMe { get; set; }
         }
 
@@ -78,36 +78,47 @@ namespace DCarMarketplace.Areas.Identity.Pages.Account
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
             returnUrl ??= Url.Content("~/");
-
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
 
             if (ModelState.IsValid)
             {
-                // Tenta fazer login normal (verifica email e password)
+                // 1. Obter o utilizador pelo email
+                var user = await _userManager.FindByEmailAsync(Input.Email);
+
+                if (user != null)
+                {
+                    // 2. VERIFICAR SE ESTÁ BLOQUEADO (Requisito: Motivo do bloqueio)
+                    if (user.EstadoConta == "bloqueado")
+                    {
+                        // Vai buscar o último registo de bloqueio ao histórico
+                        var ultimoBloqueio = await _context.HistoricoAcoesAdmin
+                            .Where(h => h.AlvoUtilizadorId == user.Id && h.TipoAcao == "Bloqueio")
+                            .OrderByDescending(h => h.Data)
+                            .FirstOrDefaultAsync();
+
+                        string motivo = ultimoBloqueio?.Motivo ?? "Violação dos termos de serviço.";
+
+                        ModelState.AddModelError(string.Empty, $"A sua conta está BLOQUEADA. Motivo: {motivo}");
+                        return Page();
+                    }
+
+                    // 3. VERIFICAR SE O EMAIL ESTÁ CONFIRMADO (Requisito: Validação de Email)
+                    if (!await _userManager.IsEmailConfirmedAsync(user))
+                    {
+                        ModelState.AddModelError(string.Empty, "Tem de confirmar o seu email antes de entrar. Verifique a sua caixa de correio.");
+                        return Page();
+                    }
+                }
+
+                // 4. Tentar Login Normal
+                // O lockoutOnFailure a true ativa o bloqueio automático após X tentativas falhadas
                 var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
 
                 if (result.Succeeded)
                 {
-                    // === BLOCO DE SEGURANÇA NOVO ===
-                    // Verificar se a conta está bloqueada pelo Admin
-                    var user = await _userManager.FindByEmailAsync(Input.Email);
-
-                    if (user != null && user.EstadoConta == "bloqueado")
-                    {
-                        // Se estiver bloqueado, faz logout imediato
-                        await _signInManager.SignOutAsync();
-
-                        _logger.LogWarning("Tentativa de login de conta bloqueada: {Email}", Input.Email);
-
-                        ModelState.AddModelError(string.Empty, "A sua conta encontra-se bloqueada. Contacte o administrador.");
-                        return Page();
-                    }
-                    // ===============================
-
                     _logger.LogInformation("User logged in.");
                     return LocalRedirect(returnUrl);
                 }
-
                 if (result.RequiresTwoFactor)
                 {
                     return RedirectToPage("./LoginWith2fa", new { ReturnUrl = returnUrl, RememberMe = Input.RememberMe });
@@ -119,12 +130,12 @@ namespace DCarMarketplace.Areas.Identity.Pages.Account
                 }
                 else
                 {
-                    ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+                    ModelState.AddModelError(string.Empty, "Tentativa de login inválida.");
                     return Page();
                 }
             }
 
-            // If we got this far, something failed, redisplay form
+            // Se chegámos aqui, algo falhou, volta a mostrar o formulário
             return Page();
         }
     }

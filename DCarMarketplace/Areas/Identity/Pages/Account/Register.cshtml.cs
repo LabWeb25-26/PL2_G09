@@ -2,16 +2,19 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Threading;
+using System.Text;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
-using DCarMarketplace.Models; // O teu namespace
-using DCarMarketplace.Data;   // O namespace do contexto
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using DCarMarketplace.Models;
+using DCarMarketplace.Data;
 
 namespace DCarMarketplace.Areas.Identity.Pages.Account
 {
@@ -98,6 +101,7 @@ namespace DCarMarketplace.Areas.Identity.Pages.Account
             {
                 var user = CreateUser();
 
+                // Preencher dados do Utilizador base
                 user.Nome = Input.Nome;
                 user.DataRegisto = DateTime.Now;
                 user.EstadoConta = "ativo";
@@ -109,8 +113,9 @@ namespace DCarMarketplace.Areas.Identity.Pages.Account
 
                 if (result.Succeeded)
                 {
-                    _logger.LogInformation("Nova conta criada.");
+                    _logger.LogInformation("User created a new account with password.");
 
+                    // --- LÓGICA DE VENDEDOR VS COMPRADOR ---
                     if (Input.TipoConta == "Vendedor")
                     {
                         var vendedor = new Vendedor
@@ -120,7 +125,7 @@ namespace DCarMarketplace.Areas.Identity.Pages.Account
                             Morada = Input.Morada,
                             Contactos = Input.Contactos,
                             Tipo = "Particular",
-                            EstadoAprovacao = "pendente"
+                            EstadoAprovacao = "pendente" // Fica pendente até Admin aprovar
                         };
                         _context.Vendedores.Add(vendedor);
                         await _userManager.AddToRoleAsync(user, "Vendedor");
@@ -138,14 +143,36 @@ namespace DCarMarketplace.Areas.Identity.Pages.Account
                     }
 
                     await _context.SaveChangesAsync();
-                    await _signInManager.SignInAsync(user, isPersistent: false);
-                    return LocalRedirect(returnUrl);
+
+                    // --- GERAÇÃO DE TOKEN DE EMAIL E REDIRECIONAMENTO ---
+                    var userId = await _userManager.GetUserIdAsync(user);
+                    var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                    code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+                    var callbackUrl = Url.Page(
+                        "/Account/ConfirmEmail",
+                        pageHandler: null,
+                        values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
+                        protocol: Request.Scheme);
+
+                    // Se a confirmação for obrigatória (o que definimos no Program.cs), vai para a página de confirmação
+                    if (_userManager.Options.SignIn.RequireConfirmedAccount)
+                    {
+                        return RedirectToPage("RegisterConfirmation", new { email = Input.Email, returnUrl = returnUrl });
+                    }
+                    else
+                    {
+                        // Se não for obrigatória, entra direto
+                        await _signInManager.SignInAsync(user, isPersistent: false);
+                        return LocalRedirect(returnUrl);
+                    }
                 }
                 foreach (var error in result.Errors)
                 {
                     ModelState.AddModelError(string.Empty, error.Description);
                 }
             }
+
+            // Se falhar, volta a mostrar o formulário
             return Page();
         }
 

@@ -1,0 +1,54 @@
+﻿@model IEnumerable<DCarMarketplace.Models.Notificacao>
+
+@{
+    int count = Model.Count();
+}
+
+<li class="nav-item dropdown me-3">
+    <a class="nav-link position-relative text-dark" href="#" data-bs-toggle="dropdown">
+        <i class="bi bi-bell fs-5"></i>
+        @if (count > 0)
+        {
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem;">
+                @count
+            </span>
+        }
+    </a>
+
+    <ul class="dropdown-menu dropdown-menu-end shadow border-0" style="width: 300px;">
+        <li><h6 class="dropdown-header fw-bold">Notificações</h6></li>
+
+        @if (count == 0)
+        {
+            <li><span class="dropdown-item-text text-muted small">Sem novas notificações.</span></li>
+        }
+        else
+        {
+            @foreach (var n in Model)
+            {
+                <li>
+                    <a href="@n.Link" class="dropdown-item" onclick="marcarComoLida(@n.Id)">
+                        <div class="d-flex align-items-start">
+                            <i class="bi bi-car-front-fill text-primary me-2 mt-1"></i>
+                            <div>
+                                <div class="text-wrap small">@n.Mensagem</div>
+                                <div class="text-muted" style="font-size: 0.7rem;">@n.Data.ToShortTimeString()</div>
+                            </div>
+                        </div>
+                    </a>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+            }
+        }
+    </ul>
+</li>
+
+<script>
+    function marcarComoLida(id) {
+        // Envia um pedido ao servidor para marcar como lida na BD
+        $.post("/Notificacoes/MarcarComoLida", { id: id }, function() {
+            // Opcional: Atualizar o contador visualmente logo após o clique
+            // Mas como a página vai mudar para o anúncio, o refresh trata disso
+        });
+    }
+</script>

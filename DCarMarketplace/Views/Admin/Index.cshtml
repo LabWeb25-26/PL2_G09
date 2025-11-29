@@ -62,14 +62,30 @@
                             </td>
 
                             <td>
-                                @if (user.EstadoConta == "ativo")
-                                {
-                                    <span class="text-success small fw-bold"><i class="bi bi-check-circle-fill"></i> Ativo</span>
-                                }
-                                else
-                                {
-                                    <span class="text-danger small fw-bold"><i class="bi bi-ban"></i> Bloqueado</span>
-                                }
+                                <div class="d-flex flex-column gap-1">
+                                    @if (user.EstadoConta == "ativo")
+                                    {
+                                        <span class="text-success small fw-bold"><i class="bi bi-check-circle-fill"></i> Ativo</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-danger small fw-bold"><i class="bi bi-ban"></i> Bloqueado</span>
+                                    }
+
+                                    @if (!user.EmailConfirmed)
+                                    {
+                                        <span class="badge bg-warning text-dark border border-warning" title="O utilizador não consegue fazer login">
+                                            <i class="bi bi-envelope-exclamation"></i> Email Pendente
+                                        </span>
+
+                                        <form asp-action="ConfirmarEmailManual" method="post" class="mt-1">
+                                            <input type="hidden" name="id" value="@user.Id" />
+                                            <button type="submit" class="btn btn-xs btn-outline-dark py-0" style="font-size: 0.7rem;">
+                                                Validar Agora
+                                            </button>
+                                        </form>
+                                    }
+                                </div>
                             </td>
 
                             <td>

@@ -17,17 +17,20 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 // 2. CONFIGURA��O DO IDENTITY (CORRIGIDA)
 // Mud�mos <IdentityUser> para <Utilizador>
 // Adicion�mos .AddRoles<IdentityRole>()
-builder.Services.AddDefaultIdentity<Utilizador>(options =>
-{
-    // Facilita a vida em desenvolvimento (n�o pede confirma��o de email nem passwords complexas)
-    options.SignIn.RequireConfirmedAccount = false;
-    options.Password.RequireDigit = true;
+builder.Services.AddDefaultIdentity<Utilizador>(options => {
+
+    // MUDAR ISTO PARA TRUE
+    options.SignIn.RequireConfirmedAccount = true;
+
+    // (As outras opções de password podes manter como tinhas)
+    options.Password.RequireDigit = false;
+    options.Password.RequireLowercase = false;
     options.Password.RequireNonAlphanumeric = false;
     options.Password.RequireUppercase = false;
     options.Password.RequiredLength = 6;
 })
-    .AddRoles<IdentityRole>() // <--- IMPORTANTE: Ativa os Perfis (Admin, Vendedor)
-    .AddEntityFrameworkStores<ApplicationDbContext>();
+.AddRoles<IdentityRole>()
+.AddEntityFrameworkStores<ApplicationDbContext>();
 
 builder.Services.AddControllersWithViews();
 

@@ -35,7 +35,7 @@ namespace DCarMarketplace.Data
 
         // Tabela de Favoritos (Corações)
         public DbSet<AnuncioFavorito> AnunciosFavoritos { get; set; }
-
+        public DbSet<Notificacao> Notificacoes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
