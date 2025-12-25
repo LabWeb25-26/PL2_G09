@@ -2,7 +2,7 @@
 
 @{
     ViewData["Title"] = "Editar Anúncio";
-    var fotosAtuais = Model.FotosAtuais?.Split(';', StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
+    bool temFotos = Model.FotosAtuais != null && Model.FotosAtuais.Any();
 }
 
 <div class="container mt-5 mb-5">
@@ -17,46 +17,53 @@
                 </div>
 
                 <div class="card-body p-5">
-                    <form asp-action="Edit" enctype="multipart/form-data">
+                    @* FORMULÁRIO ÚNICO *@
+                    <form asp-action="Edit" enctype="multipart/form-data" id="formAnuncio">
                         <input type="hidden" asp-for="Id" />
-                        <input type="hidden" asp-for="FotosAtuais" />
                         <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
+                        @* 1. GALERIA ATUAL *@
                         <h5 class="fw-bold text-danger mb-3"><i class="bi bi-images me-2"></i>Galeria Atual</h5>
-
                         <div class="d-flex gap-3 flex-wrap mb-4 bg-light p-3 rounded border" id="areaFotosAtuais">
-                            @if (fotosAtuais.Length > 0)
+                            @if (temFotos)
                             {
-                                foreach (var foto in fotosAtuais)
+                                foreach (var foto in Model.FotosAtuais)
                                 {
-                                    <div class="position-relative d-inline-block" id="foto-container-@foto.GetHashCode()">
-                                        <img src="~/imagens_carros/@foto" style="height: 100px; width: 150px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd;" />
-                                        <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 m-1 rounded-circle d-flex align-items-center justify-content-center"
-                                                style="width: 24px; height: 24px; padding: 0;"
-                                                onclick="removerFotoExistente(@Model.Id, '@foto', 'foto-container-@foto.GetHashCode()')">
-                                            <i class="bi bi-x"></i>
+                                    <div class="position-relative d-inline-block item-foto-atual" id="foto-item-@foto.Id" style="width: 150px; height: 100px;">
+                                        <img src="~/imagens_carros/@foto.FicheiroNome" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px; border: 1px solid #ddd;" />
+
+                                        @* Botão X sem formulário para não resetar a página *@
+                                        <button type="button" class="btn btn-danger btn-sm position-absolute"
+                                                style="top: 5px; right: 5px; width: 26px; height: 26px; padding: 0; border-radius: 5px; display: flex; align-items: center; justify-content: center; z-index: 10;"
+                                                onclick="removerFotoExistente(@Model.Id, '@foto.FicheiroNome', 'foto-item-@foto.Id')">
+                                            <i class="bi bi-x-lg" style="font-size: 14px;"></i>
                                         </button>
                                     </div>
                                 }
                             }
                             else
                             {
-                                <span class="text-muted small fst-italic align-self-center">Sem fotografias carregadas.</span>
+                                <span class="text-muted small fst-italic align-self-center text-aviso-vazio">Sem fotografias carregadas.</span>
                             }
                         </div>
 
+                        @* 2. ADICIONAR NOVAS FOTOS *@
                         <div class="mb-5">
                             <label class="form-label fw-bold">Adicionar Mais Fotos</label>
-                            <div class="upload-container position-relative">
-                                <i class="bi bi-cloud-plus upload-icon"></i>
-                                <h6 class="fw-bold">Carregar novas imagens</h6>
-                                <input asp-for="NovasFotos" class="upload-input" type="file" multiple accept="image/*" id="fileInputNew" />
+                            <div class="upload-container position-relative border-2 border-dashed rounded-4 p-4 text-center bg-light" style="cursor: pointer;">
+                                <i class="bi bi-cloud-plus fs-2 text-danger"></i>
+                                <h6 class="fw-bold">Clique para carregar novas imagens</h6>
+                                <input asp-for="NovasFotos" class="upload-input" type="file" multiple accept="image/*" id="fileInputNew"
+                                       style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;" />
                             </div>
-                            <div class="image-preview-grid mt-2" id="previewAreaNew"></div>
+                            @* Área onde as fotos novas aparecem com o X *@
+                            <div class="image-preview-grid mt-3 d-flex flex-wrap gap-3" id="previewAreaNew"></div>
+                            <span asp-validation-for="NovasFotos" class="text-danger small d-block mt-2"></span>
                         </div>
 
                         <hr class="my-4">
 
+                        @* 3. DADOS DO VEÍCULO *@
                         <h5 class="fw-bold text-danger mb-3"><i class="bi bi-car-front-fill me-2"></i>Dados do Veículo</h5>
 
                         <div class="row g-3 mb-3">
@@ -65,12 +72,14 @@
                                     <select asp-for="MarcaId" id="ddlMarca" class="form-select" asp-items="ViewBag.MarcaId"></select>
                                     <label>Marca</label>
                                 </div>
+                                <span asp-validation-for="MarcaId" class="text-danger small d-block"></span>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-floating">
                                     <select asp-for="ModeloId" id="ddlModelo" class="form-select" asp-items="ViewBag.ModeloId"></select>
                                     <label>Modelo</label>
                                 </div>
+                                <span asp-validation-for="ModeloId" class="text-danger small d-block"></span>
                             </div>
                         </div>
 
@@ -80,6 +89,7 @@
                                     <select asp-for="CombustivelId" class="form-select" asp-items="ViewBag.CombustivelId"></select>
                                     <label>Combustível</label>
                                 </div>
+                                <span asp-validation-for="CombustivelId" class="text-danger small d-block"></span>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-floating">
@@ -89,18 +99,21 @@
                                     </select>
                                     <label>Caixa</label>
                                 </div>
+                                <span asp-validation-for="Caixa" class="text-danger small d-block"></span>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-floating">
                                     <select asp-for="Ano" class="form-select" asp-items="ViewBag.ListaAnos"></select>
                                     <label>Ano</label>
                                 </div>
+                                <span asp-validation-for="Ano" class="text-danger small d-block"></span>
                             </div>
                         </div>
 
                         <div class="row g-3 mb-3">
                             <div class="col-md-4">
                                 <div class="form-floating"><input asp-for="Cor" class="form-control" /><label>Cor</label></div>
+                                <span asp-validation-for="Cor" class="text-danger small d-block"></span>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-floating">
@@ -110,6 +123,7 @@
                                     </select>
                                     <label>Nº Portas</label>
                                 </div>
+                                <span asp-validation-for="NumeroPortas" class="text-danger small d-block"></span>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-floating">
@@ -124,53 +138,65 @@
                                     </select>
                                     <label>Categoria</label>
                                 </div>
+                                <span asp-validation-for="Segmento" class="text-danger small d-block"></span>
                             </div>
                         </div>
 
                         <div class="row g-3 mb-3">
                             <div class="col-md-6">
                                 <div class="form-floating"><input asp-for="Potencia" class="form-control" /><label>Potência (cv)</label></div>
+                                <span asp-validation-for="Potencia" class="text-danger small d-block"></span>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-floating"><input asp-for="Cilindrada" class="form-control" /><label>Cilindrada (cm3)</label></div>
+                                <span asp-validation-for="Cilindrada" class="text-danger small d-block"></span>
                             </div>
                         </div>
 
                         <div class="row g-3 mb-4">
                             <div class="col-md-4">
                                 <div class="form-floating"><input asp-for="Quilometragem" class="form-control" /><label>Quilómetros</label></div>
+                                <span asp-validation-for="Quilometragem" class="text-danger small d-block"></span>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-floating"><input asp-for="Matricula" class="form-control" style="text-transform: uppercase;" /><label>Matrícula</label></div>
+                                <span asp-validation-for="Matricula" class="text-danger small d-block"></span>
                             </div>
                             <div class="col-md-4">
-                                <div class="form-floating"><input asp-for="VIN" class="form-control" style="text-transform: uppercase;" maxlength="17" /><label>VIN</label></div>
+                                <div class="form-floating"><input asp-for="VIN" id="vinInput" class="form-control" style="text-transform: uppercase;" maxlength="17" /><label>VIN</label></div>
+                                <span asp-validation-for="VIN" class="text-danger small d-block"></span>
                             </div>
                         </div>
 
                         <hr class="my-4">
 
+                        @* 4. DETALHES DO ANÚNCIO *@
                         <h5 class="fw-bold text-danger mb-3"><i class="bi bi-tag-fill me-2"></i>Detalhes</h5>
                         <div class="form-floating mb-3">
                             <input asp-for="Titulo" class="form-control" />
                             <label>Título do Anúncio</label>
                         </div>
+                        <span asp-validation-for="Titulo" class="text-danger small d-block mb-3"></span>
+
                         <div class="row g-3 mb-3">
                             <div class="col-md-6">
                                 <div class="form-floating"><input asp-for="Preco" class="form-control" type="number" step="0.01" /><label>Preço (€)</label></div>
+                                <span asp-validation-for="Preco" class="text-danger small d-block"></span>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-floating"><input asp-for="Localizacao" class="form-control" /><label>Localização</label></div>
+                                <span asp-validation-for="Localizacao" class="text-danger small d-block"></span>
                             </div>
                         </div>
                         <div class="form-floating mb-4">
                             <textarea asp-for="Descricao" class="form-control" style="height: 150px"></textarea>
                             <label>Descrição</label>
                         </div>
+                        <span asp-validation-for="Descricao" class="text-danger small d-block mb-4"></span>
 
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                            <a asp-action="MeusAnuncios" class="btn btn-outline-secondary px-4 py-2">Cancelar</a>
-                            <button type="submit" class="btn btn-warning fw-bold text-white px-5 py-2">Guardar Alterações</button>
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-5">
+                            <a asp-action="MeusAnuncios" class="btn btn-outline-secondary px-4">Cancelar</a>
+                            <button type="submit" class="btn btn-warning fw-bold text-white px-5">Guardar Alterações</button>
                         </div>
                     </form>
                 </div>
@@ -180,44 +206,89 @@
 </div>
 
 @section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
+    @* Scripts de Validação *@
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.3/jquery.validate.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.12/jquery.validate.unobtrusive.min.js"></script>
 
     <script>
-        // Remover Foto Existente
-        function removerFotoExistente(anuncioId, nomeFoto, containerId) {
-            if(!confirm("Remover esta foto?")) return;
-            $.post("/Anuncios/RemoverFotoExistente", { id: anuncioId, nomeFoto: nomeFoto }, function(data) {
-                if (data.success) { $("#" + containerId).fadeOut(300, function() { $(this).remove(); }); }
-            });
-        }
+        // Gestor de ficheiros para as NOVAS fotos
+        let dt = new DataTransfer();
 
-        // Preview Novas Fotos
         $(document).ready(function () {
+            // 1. PREVIEW DE NOVAS FOTOS COM BOTÃO X
             $("#fileInputNew").change(function() {
-                var previewArea = $("#previewAreaNew");
-                previewArea.empty();
-                for(let i=0; i<this.files.length; i++) {
+                const previewArea = $("#previewAreaNew");
+
+                for (let file of this.files) {
+                    dt.items.add(file);
+
                     let reader = new FileReader();
-                    reader.onload = function(e) { previewArea.append($('<img>').attr('src', e.target.result).addClass('preview-img')); }
-                    reader.readAsDataURL(this.files[i]);
+                    reader.onload = function(e) {
+                        let html = `
+                            <div class="position-relative d-inline-block preview-container-nova" style="width: 150px; height: 100px;">
+                                <img src="${e.target.result}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px; border: 1px solid #ddd;" />
+                                <button type="button" class="btn btn-danger btn-sm position-absolute"
+                                        style="top: 5px; right: 5px; width: 26px; height: 26px; padding: 0; border-radius: 5px; display: flex; align-items: center; justify-content: center;"
+                                        onclick="removerNovaFoto(this, '${file.name}')">
+                                    <i class="bi bi-x-lg" style="font-size: 14px;"></i>
+                                </button>
+                            </div>`;
+                        previewArea.append(html);
+                    }
+                    reader.readAsDataURL(file);
                 }
+                this.files = dt.files; // Sincroniza o input
             });
 
-            // AJAX Marca/Modelo
-             $("#ddlMarca").change(function () {
+            // 2. FILTRO VIN
+            $("#vinInput").on("input", function() {
+                this.value = this.value.toUpperCase().replace(/[IOQ]/g, "");
+            });
+
+            // 3. AJAX MARCA/MODELO
+            $("#ddlMarca").change(function () {
                 var id = $(this).val();
                 var ddl = $("#ddlModelo");
                 ddl.empty();
                 if(id) {
-                    ddl.append('<option>Carregando...</option>');
                     $.getJSON("/Anuncios/GetModelosByMarcaId", { marcaId: id }, function(d) {
-                        ddl.empty().append('<option value="">Selecione...</option>');
+                        ddl.append('<option value="">Selecione...</option>');
                         $.each(d, function(i, item) { ddl.append('<option value="'+item.id+'">'+item.nome+'</option>'); });
                     });
                 }
             });
         });
+
+        // FUNÇÃO: REMOVER FOTO QUE JÁ ESTAVA NO SERVIDOR
+        function removerFotoExistente(anuncioId, nomeFoto, containerId) {
+            if(!confirm("Remover esta foto do sistema?")) return;
+
+            $.post("/Anuncios/RemoverFotoExistente", { id: anuncioId, nomeFoto: nomeFoto }, function(data) {
+                if (data.success) {
+                    $("#" + containerId).fadeOut(300, function() {
+                        $(this).remove();
+                        if($("#areaFotosAtuais").children(".item-foto-atual").length === 0) {
+                            $("#areaFotosAtuais").html('<span class="text-muted small fst-italic text-aviso-vazio">Sem fotografias carregadas.</span>');
+                        }
+                    });
+                } else {
+                    alert("Erro: " + data.message);
+                }
+            });
+        }
+
+        // FUNÇÃO: REMOVER FOTO SELECIONADA AGORA (PREVIEW)
+        function removerNovaFoto(btn, fileName) {
+            $(btn).closest('.preview-container-nova').remove();
+            let newDt = new DataTransfer();
+            for (let i = 0; i < dt.files.length; i++) {
+                if (dt.files[i].name !== fileName) {
+                    newDt.items.add(dt.files[i]);
+                }
+            }
+            dt = newDt;
+            document.getElementById('fileInputNew').files = dt.files;
+        }
     </script>
 }

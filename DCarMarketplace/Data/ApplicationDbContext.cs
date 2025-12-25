@@ -33,6 +33,9 @@ namespace DCarMarketplace.Data
         public DbSet<MarcaFavorita> MarcasFavoritas { get; set; }
         public DbSet<HistoricoAcaoAdmin> HistoricoAcoesAdmin { get; set; }
 
+        // Tabela de Fotos
+        public DbSet<Foto> Fotos { get; set; }
+
         // Tabela de Favoritos (Corações)
         public DbSet<AnuncioFavorito> AnunciosFavoritos { get; set; }
         public DbSet<Notificacao> Notificacoes { get; set; }

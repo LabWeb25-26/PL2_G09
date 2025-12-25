@@ -2,12 +2,10 @@
 
 @{
     ViewData["Title"] = Model.Titulo;
-    // Lógica para separar as imagens
-    var listaImagens = Model.Fotos?.Split(';', StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
+    bool temFotos = Model.Fotos != null && Model.Fotos.Any();
 }
 
 <div class="container mt-5 mb-5">
-
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb bg-transparent p-0">
             <li class="breadcrumb-item">
@@ -20,11 +18,9 @@
     </nav>
 
     <div class="row">
-
         <div class="col-lg-8">
 
             <div class="card border-0 rounded-4 overflow-hidden mb-3 bg-black shadow-sm position-relative">
-
                 @if (Model.Estado != "ativo")
                 {
                     <div class="position-absolute top-0 start-0 m-3 z-3">
@@ -34,30 +30,28 @@
                         }
                         else if (Model.Estado == "vendido")
                         {
-
                             <span class="badge bg-danger fs-6 shadow"><i class="bi bi-tag-fill"></i> VENDIDO</span>
                         }
                         else if (Model.Estado == "pausado")
                         {
-
                             <span class="badge bg-warning text-dark fs-6 shadow"><i class="bi bi-pause-circle"></i> PAUSADO</span>
                         }
                     </div>
                 }
 
-                @if (listaImagens.Length > 0)
+                @if (temFotos)
                 {
                     <div id="carroCarousel" class="carousel slide" data-bs-interval="false">
                         <div class="carousel-inner" style="height: 500px; background-color: #000;">
-                            @for (int i = 0; i < listaImagens.Length; i++)
+                            @for (int i = 0; i < Model.Fotos.Count; i++)
                             {
                                 <div class="carousel-item @(i == 0 ? "active" : "") h-100 text-center">
-                                    <img src="~/imagens_carros/@listaImagens[i]" class="h-100 w-auto mw-100" style="object-fit: contain;" alt="Foto @(i + 1)">
+                                    <img src="~/imagens_carros/@Model.Fotos[i].FicheiroNome" class="h-100 w-auto mw-100" style="object-fit: contain;" alt="Foto @(i + 1)">
                                 </div>
                             }
                         </div>
 
-                        @if (listaImagens.Length > 1)
+                        @if (Model.Fotos.Count > 1)
                         {
                             <button class="carousel-control-prev" type="button" data-bs-target="#carroCarousel" data-bs-slide="prev">
                                 <span class="carousel-control-prev-icon bg-dark rounded-circle p-3 bg-opacity-50" aria-hidden="true"></span>
@@ -79,12 +73,12 @@
                 }
             </div>
 
-            @if (listaImagens.Length > 1)
+            @if (temFotos && Model.Fotos.Count > 1)
             {
                 <div class="d-flex gap-2 mb-5 overflow-auto pb-2">
-                    @for (int i = 0; i < listaImagens.Length; i++)
+                    @for (int i = 0; i < Model.Fotos.Count; i++)
                     {
-                        <img src="~/imagens_carros/@listaImagens[i]"
+                        <img src="~/imagens_carros/@Model.Fotos[i].FicheiroNome"
                              class="rounded-3 border border-2 cursor-pointer opacity-75 hover-opacity-100"
                              style="width: 100px; height: 70px; object-fit: cover; cursor: pointer; transition: all 0.2s;"
                              onclick="mudarSlide(@i, this)"
@@ -94,7 +88,6 @@
             }
 
             <div class="card border-0 shadow-sm rounded-4 p-5 mb-5">
-
                 <h3 class="fw-bold mb-4 text-dark">Descrição</h3>
                 <p class="text-muted text-break mb-5" style="line-height: 1.8; font-size: 1.05rem; white-space: pre-line;">
                     @Model.Descricao
@@ -106,11 +99,11 @@
 
                 <div class="detail-row">
                     <span class="detail-label">Marca</span>
-                    <span class="detail-value">@Model.Carro.Modelo.Marca.Nome</span>
+                    <span class="detail-value">@(Model.Carro?.Modelo?.Marca?.Nome ?? "N/A")</span>
                 </div>
                 <div class="detail-row">
                     <span class="detail-label">Modelo</span>
-                    <span class="detail-value">@Model.Carro.Modelo.Nome</span>
+                    <span class="detail-value">@(Model.Carro?.Modelo?.Nome ?? "N/A")</span>
                 </div>
                 <div class="detail-row">
                     <span class="detail-label">Ano de Registo</span>
@@ -139,7 +132,7 @@
                 </div>
                 <div class="detail-row">
                     <span class="detail-label">Combustível</span>
-                    <span class="detail-value">@Model.Carro.Combustivel.Tipo</span>
+                    <span class="detail-value">@(Model.Carro?.Combustivel?.Tipo ?? "N/A")</span>
                 </div>
                 <div class="detail-row">
                     <span class="detail-label">Caixa de Velocidades</span>
@@ -165,14 +158,18 @@
                     <span class="detail-label">Referência Anúncio</span>
                     <span class="detail-value">#@Model.Id</span>
                 </div>
-
             </div>
 
             <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
-                <div class="bg-light p-5 text-center" style="background: url('https://maps.googleapis.com/maps/api/staticmap?center=@Model.Localizacao&zoom=13&size=600x300&maptype=roadmap') no-repeat center/cover;">
-                    <div class="bg-white d-inline-block p-3 rounded-3 shadow-sm mt-4 mb-4">
-                        <i class="bi bi-geo-alt-fill text-danger"></i> <strong>@Model.Localizacao</strong>
+                <div id="map" style="height: 400px; width: 100%; z-index: 1;"></div>
+                <div class="p-3 bg-white border-top d-flex align-items-center justify-content-between">
+                    <div>
+                        <i class="bi bi-geo-alt-fill text-danger me-2"></i>
+                        <span class="fw-bold text-dark">@Model.Localizacao</span>
                     </div>
+                    <a href="https://www.google.com/maps/search/?api=1&query=@Uri.EscapeDataString(Model.Localizacao)" target="_blank" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-map"></i> Ver no Google Maps
+                    </a>
                 </div>
             </div>
 
@@ -180,10 +177,9 @@
 
         <div class="col-lg-4">
             <div class="price-card sticky-top" style="top: 20px; z-index: 10;">
-
                 <div class="mb-3">
-                    <h6 class="text-muted text-uppercase small fw-bold mb-1">@Model.Carro.Modelo.Marca.Nome</h6>
-                    <h2 class="fw-bold mb-2">@Model.Carro.Modelo.Nome</h2>
+                    <h6 class="text-muted text-uppercase small fw-bold mb-1">@(Model.Carro?.Modelo?.Marca?.Nome ?? "MARCA")</h6>
+                    <h2 class="fw-bold mb-2">@(Model.Carro?.Modelo?.Nome ?? "MODELO")</h2>
                     <div class="mt-3">
                         <span class="display-5 fw-bold text-danger">@Model.Preco.ToString("N0") €</span>
                     </div>
@@ -193,7 +189,6 @@
 
                 <h6 class="fw-bold text-dark mb-3">Destaques</h6>
                 <div class="row g-3 text-center small mb-4">
-
                     <div class="col-4">
                         <div class="p-2 border rounded-3 bg-light h-100">
                             <i class="bi bi-speedometer2 d-block fs-4 mb-1 text-danger"></i>
@@ -201,15 +196,13 @@
                             <strong>@(Model.Carro.Quilometragem.ToString("N0"))</strong>
                         </div>
                     </div>
-
                     <div class="col-4">
                         <div class="p-2 border rounded-3 bg-light h-100">
                             <i class="bi bi-fuel-pump d-block fs-4 mb-1 text-danger"></i>
                             <span class="d-block text-muted" style="font-size: 0.65rem;">COMBUSTÍVEL</span>
-                            <strong>@Model.Carro.Combustivel.Tipo</strong>
+                            <strong>@(Model.Carro?.Combustivel?.Tipo ?? "N/A")</strong>
                         </div>
                     </div>
-
                     <div class="col-4">
                         <div class="p-2 border rounded-3 bg-light h-100">
                             <i class="bi bi-gear-wide d-block fs-4 mb-1 text-danger"></i>
@@ -217,7 +210,6 @@
                             <strong>@Model.Carro.Caixa</strong>
                         </div>
                     </div>
-
                     <div class="col-4">
                         <div class="p-2 border rounded-3 bg-light h-100">
                             <i class="bi bi-calendar3 d-block fs-4 mb-1 text-danger"></i>
@@ -225,7 +217,6 @@
                             <strong>@Model.Carro.Ano</strong>
                         </div>
                     </div>
-
                     <div class="col-4">
                         <div class="p-2 border rounded-3 bg-light h-100">
                             <i class="bi bi-lightning-charge d-block fs-4 mb-1 text-danger"></i>
@@ -233,7 +224,6 @@
                             <strong>@Model.Carro.Potencia cv</strong>
                         </div>
                     </div>
-
                     <div class="col-4">
                         <div class="p-2 border rounded-3 bg-light h-100">
                             <i class="bi bi-gear d-block fs-4 mb-1 text-danger"></i>
@@ -256,7 +246,6 @@
                 <div class="d-grid gap-2">
                     @if (User.Identity.IsAuthenticated)
                     {
-                        // SE FOR O DONO DO ANÚNCIO OU ADMIN
                         if (User.IsInRole("Administrador") || (Model.Vendedor != null && Model.Vendedor.Utilizador.UserName == User.Identity.Name))
                         {
                             <div class="dropdown">
@@ -272,17 +261,11 @@
                                     <li><form asp-action="AtualizarEstado" asp-route-id="@Model.Id" method="post"><input type="hidden" name="novoEstado" value="vendido" /><button class="dropdown-item text-danger fw-bold">Vendido</button></form></li>
                                 </ul>
                             </div>
-
                             <div class="d-flex gap-2">
-                                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning flex-grow-1 fw-bold text-white">
-                                    Editar
-                                </a>
-                                <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger flex-grow-0">
-                                    <i class="bi bi-trash"></i>
-                                </a>
+                                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning flex-grow-1 fw-bold text-white">Editar</a>
+                                <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger flex-grow-0"><i class="bi bi-trash"></i></a>
                             </div>
                         }
-                        // SE FOR COMPRADOR
                         else if (User.IsInRole("Comprador"))
                         {
                             if (Model.Estado == "ativo")
@@ -290,91 +273,151 @@
                                 <a asp-controller="Interacoes" asp-action="Checkout" asp-route-id="@Model.Id" class="btn btn-success btn-lg fw-bold py-3 shadow-sm">
                                     <i class="bi bi-cart-check me-2"></i> Comprar Agora
                                 </a>
-                                <button class="btn btn-dcar btn-lg fw-bold py-3 shadow-sm" onclick="alert('Mensagem enviada!')">
+                                <button class="btn btn-danger btn-lg fw-bold py-3 shadow-sm" onclick="alert('Mensagem enviada!')">
                                     <i class="bi bi-chat-dots-fill me-2"></i> Enviar Mensagem
                                 </button>
-
                                 <button type="button" class="btn btn-outline-dark btn-lg fw-bold py-3" data-bs-toggle="modal" data-bs-target="#modalAcoes">
                                     <i class="bi bi-calendar-check me-2"></i> Agendar / Reserva
                                 </button>
                             }
                             else
                             {
-                                <div class="alert alert-secondary text-center fw-bold">
-                                    Veículo indisponível para compra.
-                                </div>
+                                <div class="alert alert-secondary text-center fw-bold">Veículo indisponível.</div>
                             }
                         }
                     }
                     else
                     {
-                        // SE NÃO ESTIVER LOGADO
-                        <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-dcar btn-lg py-3">
-                            Login para Contactar
-                        </a>
+                        <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-danger btn-lg py-3">Login para Contactar</a>
                     }
                 </div>
-
-                <div class="text-center mt-3 small text-muted">
-                    <i class="bi bi-shield-lock"></i> Compra 100% Segura
-                </div>
-
+                <div class="text-center mt-3 small text-muted"><i class="bi bi-shield-lock"></i> Compra 100% Segura</div>
             </div>
         </div>
     </div>
 </div>
-<div class="modal fade" id="modalAcoes" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+
+<div class="modal fade" id="modalAcoes" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content rounded-4 border-0 shadow">
             <div class="modal-header border-0">
-                <h5 class="modal-title fw-bold" id="modalLabel">O que deseja fazer?</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="modal-title fw-bold">O que deseja fazer?</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4">
-
                 <div class="card mb-3 border-danger border-2 shadow-sm">
                     <div class="card-body">
                         <h5 class="fw-bold text-danger"><i class="bi bi-bookmark-check-fill me-2"></i> Reservar Agora</h5>
                         <p class="small text-muted mb-3">O veículo ficará reservado para si durante <strong>3 dias</strong>.</p>
-
                         <form asp-controller="Interacoes" asp-action="Reservar" method="post">
                             <input type="hidden" name="anuncioId" value="@Model.Id" />
                             <button type="submit" class="btn btn-danger w-100 fw-bold">Confirmar Reserva</button>
                         </form>
                     </div>
                 </div>
-
                 <div class="text-center text-muted my-2 fw-bold">- OU -</div>
-
                 <div class="card border-0 bg-light mt-3">
                     <div class="card-body">
                         <h5 class="fw-bold mb-3"><i class="bi bi-calendar-event me-2"></i> Agendar Visita</h5>
-
                         <form asp-controller="Interacoes" asp-action="MarcarVisita" method="post">
                             <input type="hidden" name="anuncioId" value="@Model.Id" />
-
                             <div class="mb-3">
                                 <label class="form-label small text-muted">Escolha a data e hora:</label>
                                 <input type="datetime-local" name="dataVisita" class="form-control" required />
                             </div>
-
                             <button type="submit" class="btn btn-dark w-100 fw-bold">Solicitar Visita</button>
                         </form>
                     </div>
                 </div>
-
             </div>
         </div>
     </div>
 </div>
 
-<script>
-    function mudarSlide(index, element) {
-        var myCarousel = document.getElementById('carroCarousel');
-        var bsCarousel = new bootstrap.Carousel(myCarousel);
-        bsCarousel.to(index);
+@section Scripts {
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-        document.querySelectorAll('img[onclick^="mudarSlide"]').forEach(img => img.style.borderColor = "#dee2e6");
-        element.style.borderColor = "#C92525";
+    <script>
+        // Função para as miniaturas das fotos
+        function mudarSlide(index, element) {
+            var myCarousel = document.getElementById('carroCarousel');
+            var bsCarousel = new bootstrap.Carousel(myCarousel);
+            bsCarousel.to(index);
+            document.querySelectorAll('img[onclick^="mudarSlide"]').forEach(img => img.style.borderColor = "#dee2e6");
+            element.style.borderColor = "#C92525";
+        }
+
+        // Lógica do Mapa Interativo
+        document.addEventListener("DOMContentLoaded", function () {
+            var localidade = "@Model.Localizacao";
+            var map = L.map('map').setView([39.5, -8.5], 6); // Centro em Portugal
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap'
+            }).addTo(map);
+
+            // Busca as coordenadas pelo nome da localidade
+            fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(localidade))
+                .then(response => response.json())
+                .then(data => {
+                    if (data.length > 0) {
+                        var lat = data[0].lat;
+                        var lon = data[0].lon;
+                        map.setView([lat, lon], 13);
+                        L.marker([lat, lon]).addTo(map)
+                            .bindPopup('<b>Localização Aproximada:</b><br>' + localidade)
+                            .openPopup();
+                    }
+                })
+                .catch(err => console.log("Erro no mapa: ", err));
+        });
+    </script>
+}
+
+<style>
+    .details-section-header {
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #f8f9fa;
+        display: flex;
+        align-items: center;
+        gap: 10px;
     }
-</script>
+
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid #f1f1f1;
+    }
+
+    .detail-label {
+        color: #6c757d;
+        font-weight: 500;
+    }
+
+    .detail-value {
+        color: #212529;
+        font-weight: 600;
+    }
+
+    .price-card {
+        background: white;
+        border-radius: 1.5rem;
+        padding: 2rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    }
+
+    .btn-dcar {
+        background-color: #C92525;
+        color: white;
+    }
+
+        .btn-dcar:hover {
+            background-color: #a71d1d;
+            color: white;
+        }
+</style>

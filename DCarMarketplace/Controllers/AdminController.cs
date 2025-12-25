@@ -9,6 +9,7 @@ using System;
 using System.Threading.Tasks;
 using System.Linq;
 using System.Collections.Generic;
+using System.Globalization; // Necessário para a formatação de texto
 
 namespace DCarMarketplace.Controllers
 {
@@ -25,20 +26,17 @@ namespace DCarMarketplace.Controllers
         }
 
         // =============================================================
-        // 1. DASHBOARD (ESTATÍSTICAS GERAIS - RF-26)
+        // 1. DASHBOARD (ESTATÍSTICAS GERAIS)
         // =============================================================
         public async Task<IActionResult> Dashboard()
         {
-            // 1. Contagens de Utilizadores
             int totalUsers = await _context.Users.CountAsync();
             int totalVendedores = await _context.Vendedores.CountAsync();
             int totalCompradores = await _context.Compradores.CountAsync();
 
-            // 2. Contagens de Anúncios
             int ativos = await _context.Anuncios.CountAsync(a => a.Estado == "ativo");
             int vendidos = await _context.Anuncios.CountAsync(a => a.Estado == "vendido");
 
-            // 3. Dados Financeiros (Tabela Compras)
             int numVendas = await _context.Compras.CountAsync();
             decimal valorTotal = 0;
             if (numVendas > 0)
@@ -46,7 +44,6 @@ namespace DCarMarketplace.Controllers
                 valorTotal = await _context.Compras.SumAsync(c => c.Preco);
             }
 
-            // 4. Top 5 Marcas (Baseado em anúncios ativos, já que ainda temos poucas vendas)
             var topMarcas = await _context.Anuncios
                 .Include(a => a.Carro).ThenInclude(c => c.Modelo).ThenInclude(m => m.Marca)
                 .GroupBy(a => a.Carro.Modelo.Marca.Nome)
@@ -55,7 +52,6 @@ namespace DCarMarketplace.Controllers
                 .Take(5)
                 .ToDictionaryAsync(x => x.Marca, x => x.Quantidade);
 
-            // Preencher ViewModel
             var model = new AdminDashboardViewModel
             {
                 TotalUtilizadores = totalUsers,
@@ -72,7 +68,7 @@ namespace DCarMarketplace.Controllers
         }
 
         // =============================================================
-        // 2. LISTA DE UTILIZADORES (Mantém-se igual)
+        // 2. LISTA DE UTILIZADORES
         // =============================================================
         public async Task<IActionResult> Index()
         {
@@ -116,7 +112,6 @@ namespace DCarMarketplace.Controllers
                     await _userManager.AddToRoleAsync(user, "Administrador");
                     _context.Administradores.Add(new Administrador { Id = user.Id });
 
-                    // Auditoria
                     _context.HistoricoAcoesAdmin.Add(new HistoricoAcaoAdmin
                     {
                         AdminId = _userManager.GetUserId(User),
@@ -139,9 +134,8 @@ namespace DCarMarketplace.Controllers
         }
 
         // =============================================================
-        // 4. EDITAR / BLOQUEAR / APROVAR
+        // 4. GESTÃO DE UTILIZADORES (EDITAR / BLOQUEAR / APROVAR)
         // =============================================================
-
         public async Task<IActionResult> EditUser(string id)
         {
             if (id == null) return NotFound();
@@ -182,18 +176,10 @@ namespace DCarMarketplace.Controllers
             var user = await _context.Users.FindAsync(id);
             if (user == null) return NotFound();
 
-            string acao = "";
-            if (user.EstadoConta == "ativo")
-            {
-                user.EstadoConta = "bloqueado";
-                acao = "Bloqueio";
-            }
-            else
-            {
-                user.EstadoConta = "ativo";
-                acao = "Desbloqueio";
-                motivo = "Desbloqueio manual";
-            }
+            string acao = (user.EstadoConta == "ativo") ? "Bloqueio" : "Desbloqueio";
+            user.EstadoConta = (user.EstadoConta == "ativo") ? "bloqueado" : "ativo";
+
+            if (acao == "Desbloqueio") motivo = "Desbloqueio manual";
 
             _context.HistoricoAcoesAdmin.Add(new HistoricoAcaoAdmin
             {
@@ -232,15 +218,14 @@ namespace DCarMarketplace.Controllers
         public async Task<IActionResult> Historico()
         {
             var historico = await _context.HistoricoAcoesAdmin
-                .Include(h => h.Admin).ThenInclude(a => a.Utilizador) // Para ver o nome do Admin
-                .Include(h => h.AlvoUtilizador) // Para ver quem foi bloqueado
+                .Include(h => h.Admin).ThenInclude(a => a.Utilizador)
+                .Include(h => h.AlvoUtilizador)
                 .OrderByDescending(h => h.Data)
                 .ToListAsync();
 
             return View(historico);
         }
 
-        // POST: Validar Email Manualmente
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ConfirmarEmailManual(string id)
@@ -249,8 +234,6 @@ namespace DCarMarketplace.Controllers
             if (user != null)
             {
                 user.EmailConfirmed = true;
-
-                // Auditoria
                 _context.HistoricoAcoesAdmin.Add(new HistoricoAcaoAdmin
                 {
                     AdminId = _userManager.GetUserId(User),
@@ -259,10 +242,128 @@ namespace DCarMarketplace.Controllers
                     Motivo = "Utilizador não conseguia aceder ao email",
                     Data = DateTime.Now
                 });
-
                 await _context.SaveChangesAsync();
             }
             return RedirectToAction(nameof(Index));
+        }
+
+        // =============================================================
+        // 5. GESTÃO DE MARCAS E MODELOS (ATUALIZADO)
+        // =============================================================
+
+        // LISTAR MARCAS
+        public async Task<IActionResult> GerirMarcas()
+        {
+            var marcas = await _context.Marcas
+                .Include(m => m.Modelos)
+                .OrderBy(m => m.Nome)
+                .ToListAsync();
+            return View(marcas);
+        }
+
+        // CRIAR MARCA (GET)
+        public IActionResult CreateMarca()
+        {
+            return View();
+        }
+
+        // CRIAR MARCA (POST)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateMarca(string nome)
+        {
+            if (string.IsNullOrWhiteSpace(nome))
+            {
+                TempData["Error"] = "O nome da marca é obrigatório.";
+                return RedirectToAction(nameof(GerirMarcas));
+            }
+
+            // Formatação: "audi" -> "Audi"
+            string nomeFormatado = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(nome.ToLower().Trim());
+
+            if (await _context.Marcas.AnyAsync(m => m.Nome == nomeFormatado))
+            {
+                TempData["Error"] = $"A marca '{nomeFormatado}' já existe.";
+                return RedirectToAction(nameof(GerirMarcas));
+            }
+
+            var novaMarca = new Marca { Nome = nomeFormatado };
+            _context.Marcas.Add(novaMarca);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Marca criada com sucesso!";
+            return RedirectToAction(nameof(GerirMarcas));
+        }
+
+        // ADICIONAR MODELO (GET)
+        public async Task<IActionResult> CreateModelo(int marcaId)
+        {
+            var marca = await _context.Marcas.FindAsync(marcaId);
+            if (marca == null) return NotFound();
+
+            ViewBag.MarcaNome = marca.Nome;
+            ViewBag.MarcaId = marca.Id;
+            return View();
+        }
+
+        // ADICIONAR MODELO (POST)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateModelo(int marcaId, string nome)
+        {
+            if (string.IsNullOrWhiteSpace(nome))
+            {
+                TempData["Error"] = "O nome do modelo é obrigatório.";
+                return RedirectToAction(nameof(GerirMarcas));
+            }
+
+            // Formatação: "golf gti" -> "Golf Gti"
+            string nomeFormatado = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(nome.ToLower().Trim());
+
+            // VERIFICAÇÃO DE DUPLICADOS PARA A MESMA MARCA
+            var existe = await _context.Modelos.AnyAsync(m => m.MarcaId == marcaId && m.Nome == nomeFormatado);
+            if (existe)
+            {
+                TempData["Error"] = $"O modelo '{nomeFormatado}' já está associado a esta marca.";
+                return RedirectToAction(nameof(GerirMarcas));
+            }
+
+            var novoModelo = new Modelo { Nome = nomeFormatado, MarcaId = marcaId };
+            _context.Modelos.Add(novoModelo);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Modelo adicionado com sucesso!";
+            return RedirectToAction(nameof(GerirMarcas));
+        }
+
+        // APAGAR MODELO (BACKEND PARA O BOTÃO X)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ApagarModelo(int id)
+        {
+            var modelo = await _context.Modelos.FindAsync(id);
+            if (modelo != null)
+            {
+                _context.Modelos.Remove(modelo);
+                await _context.SaveChangesAsync();
+                TempData["Success"] = "Modelo removido com sucesso.";
+            }
+            return RedirectToAction(nameof(GerirMarcas));
+        }
+
+        // APAGAR MARCA
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ApagarMarca(int id)
+        {
+            var marca = await _context.Marcas.Include(m => m.Modelos).FirstOrDefaultAsync(m => m.Id == id);
+            if (marca != null)
+            {
+                _context.Marcas.Remove(marca);
+                await _context.SaveChangesAsync();
+                TempData["Success"] = "Marca e modelos associados removidos.";
+            }
+            return RedirectToAction(nameof(GerirMarcas));
         }
     }
 }

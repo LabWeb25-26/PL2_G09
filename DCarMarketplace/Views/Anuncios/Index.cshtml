@@ -21,13 +21,13 @@
                         <label class="filter-label">Categoria</label>
                         <select name="segmento" class="filter-select">
                             <option value="Todos">Todas</option>
-                            <option value="SUV" selected="@((string)ViewData["SegmentoAtual"] == "SUV")">SUV</option>
-                            <option value="Sedan" selected="@((string)ViewData["SegmentoAtual"] == "Sedan")">Sedan</option>
-                            <option value="Comercial" selected="@((string)ViewData["SegmentoAtual"] == "Comercial")">Comercial</option>
-                            <option value="Citadino" selected="@((string)ViewData["SegmentoAtual"] == "Citadino")">Citadino</option>
-                            <option value="Desportivo" selected="@((string)ViewData["SegmentoAtual"] == "Desportivo")">Desportivo</option>
-                            <option value="Cabrio" selected="@((string)ViewData["SegmentoAtual"] == "Cabrio")">Cabrio</option>
-                            <option value="Coupe" selected="@((string)ViewData["SegmentoAtual"] == "Coupe")">Coupe</option>
+                            <!option value="SUV" @((string)ViewData["SegmentoAtual"] == "SUV" ? "selected" : "")>SUV</!option>
+                            <!option value="Sedan" @((string)ViewData["SegmentoAtual"] == "Sedan" ? "selected" : "")>Sedan</!option>
+                            <!option value="Comercial" @((string)ViewData["SegmentoAtual"] == "Comercial" ? "selected" : "")>Comercial</!option>
+                            <!option value="Citadino" @((string)ViewData["SegmentoAtual"] == "Citadino" ? "selected" : "")>Citadino</!option>
+                            <!option value="Desportivo" @((string)ViewData["SegmentoAtual"] == "Desportivo" ? "selected" : "")>Desportivo</!option>
+                            <!option value="Cabrio" @((string)ViewData["SegmentoAtual"] == "Cabrio" ? "selected" : "")>Cabrio</!option>
+                            <!option value="Coupe" @((string)ViewData["SegmentoAtual"] == "Coupe" ? "selected" : "")>Coupe</!option>
                         </select>
                     </div>
 
@@ -69,14 +69,14 @@
                         <div class="d-flex gap-2">
                             <select name="anoMin" class="filter-select">
                                 <option value="">De</option>
-                                @for (int i = 1990; i <= 2026; i++)
+                                @for (int i = 1990; i <= DateTime.Now.Year; i++)
                                 {
                                     <!option value="@i" @(ViewData["AnoMin"]?.ToString() == i.ToString() ? "selected" : "")>@i</!option>
                                 }
                             </select>
                             <select name="anoMax" class="filter-select">
                                 <option value="">Até</option>
-                                @for (int i = 2026; i >= 1990; i--)
+                                @for (int i = DateTime.Now.Year; i >= 1990; i--)
                                 {
                                     <!option value="@i" @(ViewData["AnoMax"]?.ToString() == i.ToString() ? "selected" : "")>@i</!option>
                                 }
@@ -96,10 +96,10 @@
                         <label class="filter-label">Combustível</label>
                         <select name="combustivel" class="filter-select">
                             <option value="">Todos</option>
-                            <option value="Diesel" selected="@((string)ViewData["CombustivelAtual"] == "Diesel")">Diesel</option>
-                            <option value="Gasolina" selected="@((string)ViewData["CombustivelAtual"] == "Gasolina")">Gasolina</option>
-                            <option value="Elétrico" selected="@((string)ViewData["CombustivelAtual"] == "Elétrico")">Elétrico</option>
-                            <option value="Híbrido" selected="@((string)ViewData["CombustivelAtual"] == "Híbrido")">Híbrido</option>
+                            <!option value="Diesel" @((string)ViewData["CombustivelAtual"] == "Diesel" ? "selected" : "")>Diesel</!option>
+                            <!option value="Gasolina" @((string)ViewData["CombustivelAtual"] == "Gasolina" ? "selected" : "")>Gasolina</!option>
+                            <!option value="Elétrico" @((string)ViewData["CombustivelAtual"] == "Elétrico" ? "selected" : "")>Elétrico</!option>
+                            <!option value="Híbrido" @((string)ViewData["CombustivelAtual"] == "Híbrido" ? "selected" : "")>Híbrido</!option>
                         </select>
                     </div>
 
@@ -107,8 +107,8 @@
                         <label class="filter-label">Caixa</label>
                         <select name="caixa" class="filter-select">
                             <option value="">Todas</option>
-                            <option value="Manual" selected="@((string)ViewData["CaixaAtual"] == "Manual")">Manual</option>
-                            <option value="Automática" selected="@((string)ViewData["CaixaAtual"] == "Automática")">Automática</option>
+                            <!option value="Manual" @((string)ViewData["CaixaAtual"] == "Manual" ? "selected" : "")>Manual</!option>
+                            <!option value="Automática" @((string)ViewData["CaixaAtual"] == "Automática" ? "selected" : "")>Automática</!option>
                         </select>
                     </div>
 
@@ -147,11 +147,11 @@
 
                     <div style="min-width: 180px;">
                         <select name="ordenacao" class="filter-select border-0 bg-transparent fw-bold text-secondary" onchange="this.form.submit()">
-                            <option value="recente" selected="@((string)ViewData["OrdenacaoAtual"] == "recente")">Mais recentes</option>
-                            <option value="preco_asc" selected="@((string)ViewData["OrdenacaoAtual"] == "preco_asc")">Preço (Menor)</option>
-                            <option value="preco_desc" selected="@((string)ViewData["OrdenacaoAtual"] == "preco_desc")">Preço (Maior)</option>
-                            <option value="km_asc" selected="@((string)ViewData["OrdenacaoAtual"] == "km_asc")">Km (Menor)</option>
-                            <option value="km_desc" selected="@((string)ViewData["OrdenacaoAtual"] == "km_desc")">Km (Maior)</option>
+                            <!option value="recente" @((string)ViewData["OrdenacaoAtual"] == "recente" ? "selected" : "")>Mais recentes</!option>
+                            <!option value="preco_asc" @((string)ViewData["OrdenacaoAtual"] == "preco_asc" ? "selected" : "")>Preço (Menor)</!option>
+                            <!option value="preco_desc" @((string)ViewData["OrdenacaoAtual"] == "preco_desc" ? "selected" : "")>Preço (Maior)</!option>
+                            <!option value="km_asc" @((string)ViewData["OrdenacaoAtual"] == "km_asc" ? "selected" : "")>Km (Menor)</!option>
+                            <!option value="km_desc" @((string)ViewData["OrdenacaoAtual"] == "km_desc" ? "selected" : "")>Km (Maior)</!option>
                         </select>
                     </div>
 
@@ -180,12 +180,10 @@
                                     }
                                     else if (item.Estado == "vendido")
                                     {
-
                                         <span class="badge bg-danger shadow"><i class="bi bi-tag-fill"></i> VENDIDO</span>
                                     }
                                     else if (item.Estado == "pausado")
                                     {
-
                                         <span class="badge bg-warning text-dark shadow"><i class="bi bi-pause-circle"></i> PAUSADO</span>
                                     }
                                 </div>
@@ -196,22 +194,21 @@
                             </div>
 
                             <div class="ad-card-img-container">
-                                @if (!string.IsNullOrEmpty(item.Fotos))
-                                {
-                                    var primeiraFoto = item.Fotos.Split(';', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
-                                    if (!string.IsNullOrEmpty(primeiraFoto))
+                                @{
+                                    // CORREÇÃO: Lógica segura para List<Foto>
+                                    string primeiraFoto = null;
+                                    if (item.Fotos != null && item.Fotos.Any())
                                     {
-                                        <img src="~/imagens_carros/@primeiraFoto" class="ad-card-img" alt="@item.Titulo">
+                                        primeiraFoto = item.Fotos.First().FicheiroNome;
                                     }
-                                    else
-                                    {
+                                }
 
-                                        <div class="d-flex align-items-center justify-content-center h-100 bg-light text-muted"><i class="bi bi-camera-fill fs-1"></i></div>
-                                    }
+                                @if (!string.IsNullOrEmpty(primeiraFoto))
+                                {
+                                    <img src="~/imagens_carros/@primeiraFoto" class="ad-card-img" alt="@item.Titulo">
                                 }
                                 else
                                 {
-
                                     <div class="d-flex align-items-center justify-content-center h-100 bg-light text-muted"><i class="bi bi-camera-fill fs-1"></i></div>
                                 }
                             </div>

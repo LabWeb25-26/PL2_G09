@@ -1,0 +1,112 @@
+﻿@model IEnumerable<DCarMarketplace.Models.Marca>
+
+@{
+    ViewData["Title"] = "Gerir Marcas";
+}
+
+<div class="container mt-4 mb-5">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark"><i class="bi bi-tags-fill text-danger me-2"></i>Gestão de Marcas</h2>
+            <p class="text-muted mb-0">Administre a lista completa de marcas e modelos.</p>
+        </div>
+        <a asp-action="CreateMarca" class="btn btn-danger btn-lg shadow-sm fw-bold">
+            <i class="bi bi-plus-lg me-2"></i> Nova Marca
+        </a>
+    </div>
+
+    @* Mensagens de Erro (Duplicados) ou Sucesso *@
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-warning alert-dismissible fade show shadow-sm border-warning" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (Model.Any())
+    {
+        <div class="row g-4">
+            @foreach (var marca in Model)
+            {
+                <div class="col-md-6 col-lg-4">
+                    <div class="card shadow-sm border-0 h-100 rounded-4 overflow-hidden">
+                        <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center py-3 px-4">
+                            <h5 class="fw-bold mb-0 text-dark">@marca.Nome</h5>
+                            <span class="badge bg-danger">@marca.Modelos.Count</span>
+                        </div>
+
+                        <div class="card-body bg-light" style="max-height: 300px; overflow-y: auto;">
+                            @if (marca.Modelos.Any())
+                            {
+                                <ul class="list-group list-group-flush small rounded-3 shadow-sm">
+                                    @foreach (var modelo in marca.Modelos.OrderBy(m => m.Nome))
+                                    {
+                                        <li class="list-group-item bg-white d-flex justify-content-between align-items-center py-2">
+                                            <span><i class="bi bi-caret-right-fill text-danger me-1"></i> @modelo.Nome</span>
+
+                                            @* BOTÃO X PARA APAGAR MODELO *@
+                                            <form asp-action="ApagarModelo" asp-route-id="@modelo.Id" method="post" onsubmit="return confirm('Apagar o modelo @modelo.Nome?')">
+                                                <button type="submit" class="btn btn-link text-muted p-0 m-0 text-decoration-none hover-danger">
+                                                    <i class="bi bi-x-lg" style="font-size: 0.8rem;"></i>
+                                                </button>
+                                            </form>
+                                        </li>
+                                    }
+                                </ul>
+                            }
+                            else
+                            {
+                                <div class="text-center py-4 text-muted small">
+                                    <i class="bi bi-exclamation-circle mb-1"></i><br>Sem modelos
+                                </div>
+                            }
+                        </div>
+
+                        <div class="card-footer bg-white border-0 p-3">
+                            <div class="d-grid gap-2">
+                                <a asp-action="CreateModelo" asp-route-marcaId="@marca.Id" class="btn btn-outline-dark btn-sm fw-bold rounded-pill">
+                                    <i class="bi bi-plus-circle me-1"></i> Adicionar Modelo
+                                </a>
+                                @* Opcional: Botão para apagar a marca toda *@
+                                <form asp-action="ApagarMarca" asp-route-id="@marca.Id" method="post" onsubmit="return confirm('ATENÇÃO: Isto apagará a marca e TODOS os modelos associados!')">
+                                    <button type="submit" class="btn btn-link btn-sm text-muted w-100 text-decoration-none mt-1">Apagar Marca</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-folder-x display-1"></i>
+            <p class="mt-3 fs-5">Ainda não existem marcas registadas.</p>
+        </div>
+    }
+</div>
+
+<style>
+    .hover-danger:hover {
+        color: #dc3545 !important;
+    }
+    /* Estilizar a scrollbar da lista de modelos */
+    .card-body::-webkit-scrollbar {
+        width: 5px;
+    }
+
+    .card-body::-webkit-scrollbar-thumb {
+        background: #dee2e6;
+        border-radius: 10px;
+    }
+</style>

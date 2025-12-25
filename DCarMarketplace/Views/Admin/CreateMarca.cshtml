@@ -1,0 +1,91 @@
+﻿@model IEnumerable<DCarMarketplace.Models.Marca>
+
+@{
+    ViewData["Title"] = "Gerir Marcas";
+}
+
+<div class="container mt-5 mb-5">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark">Gestão de Marcas</h2>
+            <p class="text-muted">Administre as marcas e os respetivos modelos do sistema.</p>
+        </div>
+        <a asp-action="CriarMarca" class="btn btn-danger fw-bold shadow-sm px-4 py-2">
+            <i class="bi bi-plus-lg"></i> Nova Marca
+        </a>
+    </div>
+
+    <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4 py-3 text-uppercase small fw-bold text-muted">Marca</th>
+                            <th class="py-3 text-uppercase small fw-bold text-muted">Modelos Associados</th>
+                            <th class="text-end pe-4 py-3 text-uppercase small fw-bold text-muted">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Any())
+                        {
+                            foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="ps-4 py-3">
+                                        <div class="d-flex align-items-center">
+                                            <div class="rounded-circle bg-dark text-white d-flex align-items-center justify-content-center fw-bold me-3"
+                                                 style="width: 40px; height: 40px;">
+                                                @item.Nome.Substring(0, 1).ToUpper()
+                                            </div>
+                                            <span class="fw-bold fs-5">@item.Nome</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-3">
+                                        @if (item.Modelos != null && item.Modelos.Any())
+                                        {
+                                            <div class="d-flex flex-wrap gap-1">
+                                                @foreach (var modelo in item.Modelos.OrderBy(m => m.Nome))
+                                                {
+                                                    <span class="badge bg-light text-dark border fw-normal">@modelo.Nome</span>
+                                                }
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted small fst-italic">Sem modelos</span>
+                                        }
+                                    </td>
+                                    <td class="text-end pe-4 py-3">
+                                        <div class="d-flex justify-content-end gap-2">
+                                            <a asp-action="CreateModelo" asp-route-marcaId="@item.Id" class="btn btn-sm btn-outline-dark" title="Adicionar Modelo">
+                                                <i class="bi bi-plus-lg"></i> Modelo
+                                            </a>
+
+                                            <form asp-action="ApagarMarca" asp-route-id="@item.Id" method="post"
+                                                  onsubmit="return confirm('Tem a certeza? Isto apagará a marca e TODOS os seus modelos!');">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Apagar Marca">
+                                                    <i class="bi bi-trash-fill"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="3" class="text-center py-5 text-muted">
+                                    <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                    Não existem marcas registadas.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

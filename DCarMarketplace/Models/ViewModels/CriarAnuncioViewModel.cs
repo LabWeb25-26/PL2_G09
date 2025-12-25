@@ -26,7 +26,7 @@ namespace DCarMarketplace.Models.ViewModels
         public decimal Preco { get; set; }
 
         [Display(Name = "Localização")]
-        [Required(ErrorMessage = "A localização é obrigatória (ex: Lisboa, Porto).")]
+        [Required(ErrorMessage = "A localização é obrigatória (ex: Lisboa,Portugal).")]
         public string Localizacao { get; set; }
 
 
@@ -36,14 +36,14 @@ namespace DCarMarketplace.Models.ViewModels
 
         [Display(Name = "Matrícula")]
         [Required(ErrorMessage = "A matrícula é obrigatória.")]
-        [RegularExpression(@"^([A-Z]{2}-\d{2}-\d{2}|\d{2}-[A-Z]{2}-\d{2}|\d{2}-\d{2}-[A-Z]{2}|[A-Z]{2}-\d{2}-[A-Z]{2})$",
-            ErrorMessage = "Formato de matrícula inválido.")]
+        [RegularExpression(@"^(([A-Za-z]{2}-\d{2}-\d{2})|(\d{2}-\d{2}-[A-Za-z]{2})|(\d{2}-[A-Za-z]{2}-\d{2})|([A-Za-z]{2}-\d{2}-[A-Za-z]{2}))$",
+            ErrorMessage = "Formato inválido. Ex: AA-00-00, 00-00-AA, 00-AA-00 ou AA-00-AA")]
         public string Matricula { get; set; }
 
         // --- VIN (CAMPO QUE FALTAVA) ---
         [Display(Name = "VIN (Nº de Quadro)")]
-        [Required(ErrorMessage = "O VIN é obrigatório.")]
         [StringLength(17, MinimumLength = 17, ErrorMessage = "O VIN deve ter exatamente 17 caracteres.")]
+        [RegularExpression(@"^[A-HJ-NPR-Z0-9]{17}$",ErrorMessage = "VIN inválido. Não pode conter as letras I, O ou Q e deve ter 17 caracteres.")]
         public string VIN { get; set; }
         // -------------------------------
 

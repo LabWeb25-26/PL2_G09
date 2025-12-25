@@ -4,6 +4,51 @@
     ViewData["Title"] = "Vender Carro";
 }
 
+<style>
+    /* Estilos para o X aparecer no canto superior direito ao passar o rato */
+    .preview-container {
+        position: relative;
+        width: 140px;
+        height: 100px;
+    }
+
+    .preview-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+    }
+
+    .remove-btn {
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        background: rgba(220, 53, 69, 0.9);
+        color: white;
+        border: none;
+        border-radius: 4px;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        opacity: 0; /* Escondido por padrão */
+        transition: opacity 0.2s ease;
+        z-index: 10;
+    }
+
+    /* Mostra o botão quando passas o rato no container da imagem */
+    .preview-container:hover .remove-btn {
+        opacity: 1;
+    }
+
+    .remove-btn:hover {
+        background: #dc3545;
+    }
+</style>
+
 <div class="container mt-5 mb-5">
     <div class="row justify-content-center">
         <div class="col-lg-12">
@@ -15,7 +60,7 @@
                 </div>
 
                 <div class="card-body p-5">
-                    <form asp-action="Create" enctype="multipart/form-data">
+                    <form asp-action="Create" enctype="multipart/form-data" id="adForm">
                         <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
                         <h5 class="fw-bold text-danger mb-3"><i class="bi bi-camera-fill me-2"></i>Fotografias</h5>
@@ -26,8 +71,8 @@
                                 <p class="text-muted small mb-0">Suporta JPG, PNG. Máximo 9 imagens.</p>
                                 <input asp-for="ImagensFicheiros" class="upload-input" type="file" multiple accept="image/*" id="fileInput" />
                             </div>
-                            <div class="image-preview-grid mt-3" id="previewArea"></div>
-                            <span asp-validation-for="ImagensFicheiros" class="text-danger d-block mt-2"></span>
+                            <div class="image-preview-grid mt-3 d-flex flex-wrap gap-2" id="previewArea"></div>
+                            <span asp-validation-for="ImagensFicheiros" class="text-danger small d-block mt-2"></span>
                         </div>
 
                         <hr class="my-4">
@@ -40,12 +85,14 @@
                                     <select asp-for="MarcaId" id="ddlMarca" class="form-select" asp-items="ViewBag.MarcaId"><option value="">Selecione...</option></select>
                                     <label>Marca</label>
                                 </div>
+                                <span asp-validation-for="MarcaId" class="text-danger small"></span>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-floating">
                                     <select asp-for="ModeloId" id="ddlModelo" class="form-select" disabled><option value="">Selecione Marca...</option></select>
                                     <label>Modelo</label>
                                 </div>
+                                <span asp-validation-for="ModeloId" class="text-danger small"></span>
                             </div>
                         </div>
 
@@ -55,6 +102,7 @@
                                     <select asp-for="CombustivelId" class="form-select" asp-items="ViewBag.CombustivelId"></select>
                                     <label>Combustível</label>
                                 </div>
+                                <span asp-validation-for="CombustivelId" class="text-danger small"></span>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-floating">
@@ -64,12 +112,14 @@
                                     </select>
                                     <label>Caixa</label>
                                 </div>
+                                <span asp-validation-for="Caixa" class="text-danger small"></span>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-floating">
                                     <select asp-for="Ano" class="form-select" asp-items="ViewBag.ListaAnos"><option value="">Ano</option></select>
                                     <label>Ano</label>
                                 </div>
+                                <span asp-validation-for="Ano" class="text-danger small"></span>
                             </div>
                         </div>
 
@@ -79,6 +129,7 @@
                                     <input asp-for="Cor" class="form-control" placeholder="Cor" />
                                     <label>Cor</label>
                                 </div>
+                                <span asp-validation-for="Cor" class="text-danger small"></span>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-floating">
@@ -88,6 +139,7 @@
                                     </select>
                                     <label>Nº Portas</label>
                                 </div>
+                                <span asp-validation-for="NumeroPortas" class="text-danger small"></span>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-floating">
@@ -102,6 +154,7 @@
                                     </select>
                                     <label>Categoria</label>
                                 </div>
+                                <span asp-validation-for="Segmento" class="text-danger small"></span>
                             </div>
                         </div>
 
@@ -111,12 +164,14 @@
                                     <input asp-for="Potencia" class="form-control" type="number" placeholder="CV" min="1" />
                                     <label>Potência (cv)</label>
                                 </div>
+                                <span asp-validation-for="Potencia" class="text-danger small"></span>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-floating">
                                     <input asp-for="Cilindrada" class="form-control" type="number" placeholder="CC" min="50" />
                                     <label>Cilindrada (cm3)</label>
                                 </div>
+                                <span asp-validation-for="Cilindrada" class="text-danger small"></span>
                             </div>
                         </div>
 
@@ -126,12 +181,14 @@
                                     <input asp-for="Quilometragem" class="form-control" type="number" min="0" />
                                     <label>Quilómetros</label>
                                 </div>
+                                <span asp-validation-for="Quilometragem" class="text-danger small"></span>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-floating">
                                     <input asp-for="Matricula" class="form-control" style="text-transform: uppercase;" />
                                     <label>Matrícula</label>
                                 </div>
+                                <span asp-validation-for="Matricula" class="text-danger small"></span>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-floating">
@@ -148,6 +205,7 @@
                         <div class="form-floating mb-3">
                             <input asp-for="Titulo" class="form-control" placeholder="Título" />
                             <label>Título do Anúncio</label>
+                            <span asp-validation-for="Titulo" class="text-danger small"></span>
                         </div>
                         <div class="row g-3 mb-3">
                             <div class="col-md-6">
@@ -155,17 +213,20 @@
                                     <input asp-for="Preco" class="form-control" type="number" step="0.01" min="100" />
                                     <label>Preço (€)</label>
                                 </div>
+                                <span asp-validation-for="Preco" class="text-danger small"></span>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-floating">
                                     <input asp-for="Localizacao" class="form-control" placeholder="Local" />
                                     <label>Localização</label>
                                 </div>
+                                <span asp-validation-for="Localizacao" class="text-danger small"></span>
                             </div>
                         </div>
                         <div class="form-floating mb-4">
                             <textarea asp-for="Descricao" class="form-control" style="height: 120px"></textarea>
                             <label>Descrição Detalhada</label>
+                            <span asp-validation-for="Descricao" class="text-danger small"></span>
                         </div>
 
                         <div class="d-grid gap-2 mt-5">
@@ -184,34 +245,38 @@
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
     <script>
+        // DataTransfer para permitir remover ficheiros individualmente do input
+        let dt = new DataTransfer();
+
         $(document).ready(function () {
-            const dt = new DataTransfer();
             $("#fileInput").change(function() {
-                if(dt.items.length + this.files.length > 9) { alert("Máx 9 imagens."); return; }
+                var previewArea = $("#previewArea");
+
+                if(this.files.length + dt.items.length > 9) {
+                    alert("Máximo 9 imagens permitidas.");
+                    this.value = "";
+                    return;
+                }
+
                 for(let i=0; i<this.files.length; i++) {
-                    if(dt.items.length >= 9) break;
-                    dt.items.add(this.files[i]);
+                    let file = this.files[i];
+                    dt.items.add(file); // Adiciona ao controlador global de ficheiros
+
                     let reader = new FileReader();
                     reader.onload = function(e) {
-                        // Cria o container para a imagem e o botão remover
-                        let container = $('<div>').addClass('preview-container');
-                        let img = $('<img>').attr('src', e.target.result).addClass('preview-img');
-                        let btn = $('<button>').addClass('remove-image-btn').html('<i class="bi bi-x"></i>').attr('type', 'button');
-
-                        // Lógica de remover
-                        btn.click(function() {
-                            // Nota: Remover ficheiros específicos do DataTransfer é complexo porque o índice muda.
-                            // Nesta versão simples, removemos visualmente.
-                            // Para remover do envio, teríamos de reconstruir o DT.
-                            container.remove();
-                        });
-
-                        container.append(img).append(btn);
-                        $("#previewArea").append(container);
+                        // Cria o container com o hover e o botão X
+                        let html = `
+                            <div class="preview-container" data-name="${file.name}">
+                                <img src="${e.target.result}" class="preview-img">
+                                <button type="button" class="remove-btn" onclick="removePhoto(this, '${file.name}')">
+                                    <i class="bi bi-x"></i>
+                                </button>
+                            </div>`;
+                        previewArea.append(html);
                     }
-                    reader.readAsDataURL(this.files[i]);
+                    reader.readAsDataURL(file);
                 }
-                this.files = dt.files;
+                this.files = dt.files; // Atualiza o input real
             });
 
             $("#ddlMarca").change(function () {
@@ -221,12 +286,34 @@
                 if(id) {
                     ddl.append('<option>Carregando...</option>');
                     $.getJSON("/Anuncios/GetModelosByMarcaId", { marcaId: id }, function(d) {
-                        ddl.empty().append('<option>Selecione...</option>');
-                        $.each(d, function(i, item) { ddl.append('<option value="'+item.id+'">'+item.nome+'</option>'); });
+                        ddl.empty().append('<option value="">Selecione...</option>');
+                        $.each(d, function(i, item) {
+                            ddl.append('<option value="'+item.id+'">'+item.nome+'</option>');
+                        });
                         ddl.prop("disabled", false);
+                    }).fail(function() {
+                        alert("Erro ao carregar modelos.");
+                        ddl.empty().append('<option value="">Erro</option>');
                     });
-                } else { ddl.prop("disabled", true); }
+                } else {
+                    ddl.append('<option value="">Selecione Marca...</option>');
+                    ddl.prop("disabled", true);
+                }
             });
         });
+
+        // Função para remover a foto visualmente e do DataTransfer
+        function removePhoto(btn, fileName) {
+            $(btn).closest('.preview-container').remove();
+
+            let newDt = new DataTransfer();
+            for (let i = 0; i < dt.files.length; i++) {
+                if (dt.files[i].name !== fileName) {
+                    newDt.items.add(dt.files[i]);
+                }
+            }
+            dt = newDt;
+            document.getElementById('fileInput').files = dt.files;
+        }
     </script>
 }

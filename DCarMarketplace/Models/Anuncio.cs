@@ -30,7 +30,7 @@ namespace DCarMarketplace.Models
         [Required]
         public string Estado { get; set; }
 
-        public string? Fotos { get; set; } // Caminho das fotos (ex: JSON ou CSV)
+        public List<Foto> Fotos { get; set; } = new List<Foto>();
 
         // Navegação
         [ForeignKey("VendedorId")]

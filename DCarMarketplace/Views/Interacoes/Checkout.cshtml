@@ -2,7 +2,12 @@
 
 @{
     ViewData["Title"] = "Checkout Seguro";
-    var foto = Model.Fotos?.Split(';').FirstOrDefault();
+
+    string foto = null;
+    if (Model.Fotos != null && Model.Fotos.Any())
+    {
+        foto = Model.Fotos.First().FicheiroNome;
+    }
 }
 
 <div class="container mt-5 mb-5">

@@ -3,11 +3,11 @@
 @{
     ViewData["Title"] = "Eliminar Anúncio";
 
-    // Lógica segura para a imagem
+    // --- CORREÇÃO AQUI: Usar a lista de objetos Foto ---
     string primeiraFoto = null;
-    if (!string.IsNullOrEmpty(Model.Fotos))
+    if (Model.Fotos != null && Model.Fotos.Any())
     {
-        primeiraFoto = Model.Fotos.Split(';', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+        primeiraFoto = Model.Fotos.First().FicheiroNome;
     }
 }
 

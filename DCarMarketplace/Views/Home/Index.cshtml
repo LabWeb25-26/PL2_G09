@@ -15,7 +15,6 @@
                         <div class="row g-2 mb-3">
                             <div class="col-md-6">
                                 <label class="form-label small fw-bold text-muted ms-1">Marca</label>
-
                                 <select name="marca" id="searchMarca" class="form-select custom-select py-2">
                                     <option value="">Todas as Marcas</option>
                                     @if (ViewBag.ListaMarcas != null)
@@ -26,7 +25,6 @@
                                         }
                                     }
                                 </select>
-
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label small fw-bold text-muted ms-1">Modelo</label>
@@ -39,45 +37,54 @@
                         <div class="row g-2 mb-4">
                             <div class="col-6 col-md-3">
                                 <label class="form-label small fw-bold text-muted ms-1">Preço até</label>
-                                <select class="form-select custom-select py-2 text-truncate">
-                                    <option>Qualquer</option>
-                                    <option>10.000€</option>
-                                    <option>20.000€</option>
-                                    <option>50.000€</option>
+                                <select name="precoMax" class="form-select custom-select py-2 text-truncate">
+                                    <option value="">Qualquer</option>
+                                    <option value="5000">5.000€</option>
+                                    <option value="10000">10.000€</option>
+                                    <option value="20000">20.000€</option>
+                                    <option value="30000">30.000€</option>
+                                    <option value="50000">50.000€</option>
                                 </select>
                             </div>
                             <div class="col-6 col-md-3">
                                 <label class="form-label small fw-bold text-muted ms-1">Ano de</label>
-                                <select class="form-select custom-select py-2 text-truncate">
-                                    <option>Qualquer</option>
-                                    <option>2020</option>
-                                    <option>2022</option>
+                                <select name="anoMin" class="form-select custom-select py-2 text-truncate">
+                                    <option value="">Qualquer</option>
+                                    <option value="2015">2015</option>
+                                    <option value="2018">2018</option>
+                                    <option value="2020">2020</option>
+                                    <option value="2022">2022</option>
                                 </select>
                             </div>
                             <div class="col-6 col-md-3">
                                 <label class="form-label small fw-bold text-muted ms-1">Segmento</label>
-                                <select class="form-select custom-select py-2 text-truncate">
-                                    <option>Todos</option>
-                                    <option>SUV</option>
-                                    <option>Sedan</option>
+                                <select name="segmento" class="form-select custom-select py-2 text-truncate">
+                                    <option value="">Todos</option>
+                                    <option value="SUV">SUV</option>
+                                    <option value="Sedan">Sedan</option>
+                                    <option value="Citadino">Citadino</option>
+                                    <option value="Comercial">Comercial</option>
+                                    <option value="Desportivo">Desportivo</option>
                                 </select>
                             </div>
                             <div class="col-6 col-md-3">
                                 <label class="form-label small fw-bold text-muted ms-1">Combus</label>
-                                <select class="form-select custom-select py-2 text-truncate">
-                                    <option>Todos</option>
-                                    <option>Diesel</option>
-                                    <option>Gasolina</option>
+                                <select name="combustivel" class="form-select custom-select py-2 text-truncate">
+                                    <option value="">Todos</option>
+                                    <option value="Diesel">Diesel</option>
+                                    <option value="Gasolina">Gasolina</option>
+                                    <option value="Elétrico">Elétrico</option>
+                                    <option value="Híbrido">Híbrido</option>
                                 </select>
                             </div>
                         </div>
 
                         <div class="d-flex justify-content-between align-items-center mt-3">
-                            <a href="#" class="text-dark small text-decoration-none d-flex align-items-center gap-2">
+                            <a href="@Url.Action("Index", "Anuncios")" class="text-dark small text-decoration-none d-flex align-items-center gap-2">
                                 <i class="bi bi-sliders"></i> Pesquisa avançada
                             </a>
                             <button type="submit" id="btnVerAnuncios" class="btn btn-dcar px-5 py-2 fw-bold w-auto" style="border-radius: 8px;">
-                                Ver @(Model != null ? Model.Count() : 0) Anúncios
+                                Ver Resultados
                             </button>
                         </div>
                     </form>
@@ -96,24 +103,23 @@
     </div>
 
     <div class="row">
-        @if (Model != null)
+        @if (Model != null && Model.Any())
         {
             foreach (var item in Model)
             {
+                // CORREÇÃO: Lógica para List<Foto>
+                string fotoCapa = null;
+                if (item.Fotos != null && item.Fotos.Any())
+                {
+                    fotoCapa = item.Fotos.First().FicheiroNome;
+                }
+
                 <div class="col-md-4 mb-4">
                     <div class="card h-100 border-0 shadow-sm car-card">
-                        <div style="height: 200px; overflow: hidden; position: relative;">
-                            @if (!string.IsNullOrEmpty(item.Fotos))
+                        <div style="height: 200px; overflow: hidden; position: relative; background-color: #f8f9fa;">
+                            @if (!string.IsNullOrEmpty(fotoCapa))
                             {
-                                var primeiraFoto = item.Fotos.Split(';', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
-                                if (!string.IsNullOrEmpty(primeiraFoto))
-                                {
-                                    <img src="~/imagens_carros/@primeiraFoto" class="card-img-top h-100 w-100" style="object-fit: cover;" />
-                                }
-                                else
-                                {
-                                    <div class="bg-light h-100 w-100 d-flex align-items-center justify-content-center text-muted"><i class="bi bi-camera-fill fs-1"></i></div>
-                                }
+                                <img src="~/imagens_carros/@fotoCapa" class="card-img-top h-100 w-100" style="object-fit: cover;" />
                             }
                             else
                             {
@@ -123,20 +129,31 @@
                         </div>
                         <div class="card-body">
                             <h5 class="card-title fw-bold text-truncate">@item.Titulo</h5>
-                            <h4 class="text-danger fw-bold mb-3">@item.Preco.ToString("C0")</h4>
 
-                            <div class="d-flex justify-content-between text-muted small">
+                            <p class="text-muted small mb-2">
+                                @(item.Carro?.Modelo?.Marca?.Nome ?? "Marca") @(item.Carro?.Modelo?.Nome ?? "Modelo")
+                            </p>
+
+                            <h4 class="text-danger fw-bold mb-3">@item.Preco.ToString("N0") €</h4>
+
+                            <div class="d-flex justify-content-between text-muted small border-top pt-3">
                                 <span><i class="bi bi-calendar"></i> @(item.Carro?.Ano)</span>
-                                <span><i class="bi bi-speedometer2"></i> @(item.Carro?.Quilometragem) km</span>
+                                <span><i class="bi bi-speedometer2"></i> @(item.Carro?.Quilometragem.ToString("N0")) km</span>
                                 <span><i class="bi bi-fuel-pump"></i> @(item.Carro?.Combustivel?.Tipo)</span>
                             </div>
                         </div>
                         <div class="card-footer bg-white border-0 pb-3 text-center">
-                            <a asp-controller="Anuncios" asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-danger w-100">Ver Detalhes</a>
+                            <a asp-controller="Anuncios" asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-danger w-100 fw-bold">Ver Detalhes</a>
                         </div>
                     </div>
                 </div>
             }
+        }
+        else
+        {
+            <div class="col-12 text-center py-5">
+                <p class="text-muted fs-5">Não existem destaques no momento.</p>
+            </div>
         }
     </div>
 </div>
