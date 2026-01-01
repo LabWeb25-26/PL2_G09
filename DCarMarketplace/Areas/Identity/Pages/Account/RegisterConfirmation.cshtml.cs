@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
-using DCarMarketplace.Models; // Importante
+using DCarMarketplace.Models;
 
 namespace DCarMarketplace.Areas.Identity.Pages.Account
 {
@@ -39,21 +39,13 @@ namespace DCarMarketplace.Areas.Identity.Pages.Account
 
             Email = email;
 
-            // Forçar a mostrar o link em ambiente de desenvolvimento
-            DisplayConfirmAccountLink = true;
+            // --- MUDANÇA CRUCIAL AQUI ---
+            // Definimos como 'false' para que o link NÃO apareça na página web.
+            // Isto obriga o utilizador a ir procurar o link ao email.
+            DisplayConfirmAccountLink = false;
 
-            if (DisplayConfirmAccountLink)
-            {
-                var userId = await _userManager.GetUserIdAsync(user);
-                var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-
-                EmailConfirmationUrl = Url.Page(
-                    "/Account/ConfirmEmail",
-                    pageHandler: null,
-                    values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
-                    protocol: Request.Scheme);
-            }
+            // Se DisplayConfirmAccountLink for false, não precisamos de gerar o link aqui,
+            // pois o link real já foi enviado pelo EmailSender no momento do registo.
 
             return Page();
         }

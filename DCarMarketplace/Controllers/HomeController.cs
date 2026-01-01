@@ -19,19 +19,26 @@ namespace DCarMarketplace.Controllers
 
         public async Task<IActionResult> Index()
         {
-            // 1. CARREGAR MARCAS (CRÍTICO)
-            // Usamos 'ListaMarcas' para não haver confusão com outros nomes
-            ViewBag.ListaMarcas = await _context.Marcas.OrderBy(m => m.Nome).ToListAsync();
+            // CARREGAR MARCAS PARA O FILTRO DE PESQUISA
+            // Ordenamos por nome para o dropdown ficar organizado
+            ViewBag.ListaMarcas = await _context.Marcas
+                .OrderBy(m => m.Nome)
+                .ToListAsync();
 
-            // 2. CARREGAR DESTAQUES
+            // CARREGAR ANÚNCIOS EM DESTAQUE COM TODAS AS RELAÇÕES
+            // Importante: .Include(a => a.Fotos) resolve o problema das imagens não aparecerem
             var destaques = await _context.Anuncios
+                .Include(a => a.Fotos)
+                .Include(a => a.Carro)
+                    .ThenInclude(c => c.Modelo)
+                        .ThenInclude(m => m.Marca)
                 .Include(a => a.Carro)
                     .ThenInclude(c => c.Combustivel)
                 .Include(a => a.Vendedor)
                     .ThenInclude(v => v.Utilizador)
-                .Where(a => a.Estado == "ativo")
-                .OrderByDescending(a => a.DataInicio)
-                .Take(6)
+                .Where(a => a.Estado == "ativo") // Apenas anúncios visíveis
+                .OrderByDescending(a => a.DataInicio) // Mais recentes primeiro
+                .Take(6) // Mostramos apenas os primeiros 6 na Home
                 .ToListAsync();
 
             return View(destaques);

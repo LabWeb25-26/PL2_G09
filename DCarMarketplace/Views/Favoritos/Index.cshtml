@@ -1,0 +1,65 @@
+﻿@model IEnumerable<DCarMarketplace.Models.Anuncio>
+
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold"><i class="bi bi-heart-fill text-danger"></i> Os Meus Favoritos</h2>
+        <a asp-controller="Anuncios" asp-action="Index" class="btn btn-outline-dark btn-sm">Voltar à Loja</a>
+    </div>
+
+    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
+        @foreach (var item in Model)
+        {
+            <div class="col" id="card-favorito-@item.Id">
+                <div class="ad-card h-100 d-flex flex-column shadow-sm">
+                    <div class="favorite-icon" onclick="removerFavorito(@item.Id)">
+                        <i class="bi bi-heart-fill text-danger"></i>
+                    </div>
+
+                    <div class="ad-card-img-container">
+                        @if (item.Fotos != null && item.Fotos.Any())
+                        {
+                            <img src="~/imagens_carros/@item.Fotos.First().FicheiroNome" class="ad-card-img" alt="@item.Titulo">
+                        }
+                        else
+                        {
+                            <div class="d-flex align-items-center justify-content-center h-100 bg-light"><i class="bi bi-camera fs-1"></i></div>
+                        }
+                    </div>
+
+                    <div class="ad-card-body p-3">
+                        <h5 class="ad-title">@item.Titulo</h5>
+                        <p class="ad-price text-danger fw-bold">@item.Preco.ToString("N0") €</p>
+
+                        @* CORREÇÃO DO 404: asp-controller="Anuncios" *@
+                        <div class="mt-3 d-grid">
+                            <a asp-controller="Anuncios" asp-action="Details" asp-route-id="@item.Id" class="btn btn-danger rounded-pill">Ver Detalhes</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-light text-center py-5 shadow-sm mt-4">
+            <h4 class="text-muted">Ainda não tens favoritos.</h4>
+            <a asp-controller="Anuncios" asp-action="Index" class="btn btn-outline-danger mt-2">Explorar Carros</a>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        function removerFavorito(id) {
+            $.post("/Favoritos/Toggle", { anuncioId: id }, function (data) {
+                if (data.success) {
+                    // Remove o card suavemente
+                    $("#card-favorito-" + id).fadeOut(300);
+                    // Atualiza o contador na navbar imediatamente
+                    $("#fav-count").text("(" + data.count + ")");
+                }
+            });
+        }
+    </script>
+}

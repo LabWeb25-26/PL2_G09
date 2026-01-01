@@ -1,19 +1,26 @@
 ﻿@using Microsoft.AspNetCore.Identity
 @using DCarMarketplace.Models
+@using DCarMarketplace.Data
+@using Microsoft.EntityFrameworkCore
 
 @inject SignInManager<Utilizador> SignInManager
 @inject UserManager<Utilizador> UserManager
+@inject ApplicationDbContext Context
 
 <ul class="navbar-nav align-items-center gap-3">
     @if (SignInManager.IsSignedIn(User))
     {
+        // Obter o ID do utilizador e contar os favoritos diretamente no servidor
+        var userId = UserManager.GetUserId(User);
+        var totalFavoritos = Context.AnunciosFavoritos.Count(f => f.UtilizadorId == userId);
+
         <li class="nav-item d-flex align-items-center">
             <a class="text-decoration-none text-secondary fw-500 d-flex align-items-center gap-2"
                asp-controller="Favoritos"
                asp-action="Index">
 
                 <i class="bi bi-heart-fill text-secondary fs-5"></i>
-                <span>Favoritos <span id="fav-count">(0)</span></span>
+                <span>Favoritos <span id="fav-count">(@totalFavoritos)</span></span>
             </a>
         </li>
 

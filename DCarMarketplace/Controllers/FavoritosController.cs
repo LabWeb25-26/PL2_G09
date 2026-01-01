@@ -19,70 +19,56 @@ namespace DCarMarketplace.Controllers
             _userManager = userManager;
         }
 
-        // 1. API: Adicionar/Remover Favorito (Chamado pelo Coração)
+        // Página de listagem
+        public async Task<IActionResult> Index()
+        {
+            var userId = _userManager.GetUserId(User);
+            var favoritos = await _context.AnunciosFavoritos
+                .Where(f => f.UtilizadorId == userId)
+                .Include(f => f.Anuncio).ThenInclude(a => a.Carro).ThenInclude(c => c.Modelo).ThenInclude(m => m.Marca)
+                .Include(f => f.Anuncio).ThenInclude(a => a.Fotos)
+                .Select(f => f.Anuncio)
+                .ToListAsync();
+
+            ViewBag.FavoritosIds = favoritos.Select(a => a.Id).ToList();
+            return View(favoritos);
+        }
+
+        // Ação de Adicionar/Remover
         [HttpPost]
         public async Task<IActionResult> Toggle(int anuncioId)
         {
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null) return Unauthorized();
+            var userId = _userManager.GetUserId(User);
+            if (userId == null) return Unauthorized();
 
-            var favoritoExistente = await _context.AnunciosFavoritos
-                .FirstOrDefaultAsync(f => f.UtilizadorId == user.Id && f.AnuncioId == anuncioId);
+            var fav = await _context.AnunciosFavoritos
+                .FirstOrDefaultAsync(f => f.UtilizadorId == userId && f.AnuncioId == anuncioId);
 
             bool adicionado;
-
-            if (favoritoExistente != null)
+            if (fav != null)
             {
-                _context.AnunciosFavoritos.Remove(favoritoExistente);
+                _context.AnunciosFavoritos.Remove(fav);
                 adicionado = false;
             }
             else
             {
-                var novoFavorito = new AnuncioFavorito { UtilizadorId = user.Id, AnuncioId = anuncioId };
-                _context.AnunciosFavoritos.Add(novoFavorito);
+                _context.AnunciosFavoritos.Add(new AnuncioFavorito { UtilizadorId = userId, AnuncioId = anuncioId });
                 adicionado = true;
             }
 
             await _context.SaveChangesAsync();
-
-            // Conta quantos favoritos o user tem agora para atualizar o menu
-            int total = await _context.AnunciosFavoritos.CountAsync(f => f.UtilizadorId == user.Id);
+            int total = await _context.AnunciosFavoritos.CountAsync(f => f.UtilizadorId == userId);
 
             return Json(new { success = true, isFavorited = adicionado, count = total });
         }
 
-        // 2. Página: Meus Favoritos
-        public async Task<IActionResult> Index()
-        {
-            var user = await _userManager.GetUserAsync(User);
-            var favoritos = await _context.AnunciosFavoritos
-                .Include(f => f.Anuncio)
-                    .ThenInclude(a => a.Carro)
-                        .ThenInclude(c => c.Modelo)
-                            .ThenInclude(m => m.Marca)
-                .Include(f => f.Anuncio)
-                    .ThenInclude(a => a.Carro)
-                        .ThenInclude(c => c.Combustivel)
-                .Include(f => f.Anuncio)
-                    .ThenInclude(a => a.Vendedor)
-                        .ThenInclude(v => v.Utilizador)
-                .Where(f => f.UtilizadorId == user.Id)
-                .Select(f => f.Anuncio) // Extraímos apenas os anúncios para reutilizar a View
-                .ToListAsync();
-
-            ViewData["Title"] = "Meus Favoritos";
-            // Reutilizamos a view de listagem de anúncios, mas passamos a lista de favoritos
-            return View("~/Views/Anuncios/Index.cshtml", favoritos);
-        }
-
-        // 3. API: Obter número total (para atualizar o menu ao carregar a página)
+        // API para o JavaScript consultar o total
         [HttpGet]
         public async Task<JsonResult> GetTotal()
         {
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null) return Json(0);
-
-            int total = await _context.AnunciosFavoritos.CountAsync(f => f.UtilizadorId == user.Id);
+            var userId = _userManager.GetUserId(User);
+            if (userId == null) return Json(0);
+            int total = await _context.AnunciosFavoritos.CountAsync(f => f.UtilizadorId == userId);
             return Json(total);
         }
     }

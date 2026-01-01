@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.AspNetCore.Identity.UI.Services; // <--- OBRIGATÓRIO para IEmailSender
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
@@ -26,13 +26,15 @@ namespace DCarMarketplace.Areas.Identity.Pages.Account
         private readonly IUserEmailStore<Utilizador> _emailStore;
         private readonly ILogger<RegisterModel> _logger;
         private readonly ApplicationDbContext _context;
+        private readonly IEmailSender _emailSender; // <--- 1. ADICIONAR ESTA LINHA
 
         public RegisterModel(
             UserManager<Utilizador> userManager,
             IUserStore<Utilizador> userStore,
             SignInManager<Utilizador> signInManager,
             ILogger<RegisterModel> logger,
-            ApplicationDbContext context)
+            ApplicationDbContext context,
+            IEmailSender emailSender) // <--- 2. ADICIONAR NO CONSTRUTOR
         {
             _userManager = userManager;
             _userStore = userStore;
@@ -40,6 +42,7 @@ namespace DCarMarketplace.Areas.Identity.Pages.Account
             _signInManager = signInManager;
             _logger = logger;
             _context = context;
+            _emailSender = emailSender; // <--- 3. ATRIBUIR O VALOR
         }
 
         [BindProperty]
@@ -67,14 +70,13 @@ namespace DCarMarketplace.Areas.Identity.Pages.Account
             [Compare("Password", ErrorMessage = "A password e a confirmação não coincidem.")]
             public string ConfirmPassword { get; set; }
 
-            // --- CAMPOS PERSONALIZADOS ---
             [Required]
             [Display(Name = "Nome Completo")]
             public string Nome { get; set; }
 
             [Required]
             [Display(Name = "Tipo de Conta")]
-            public string TipoConta { get; set; } // "Comprador" ou "Vendedor"
+            public string TipoConta { get; set; }
 
             [Display(Name = "NIF (Apenas Vendedores)")]
             public string? NIF { get; set; }
@@ -101,7 +103,6 @@ namespace DCarMarketplace.Areas.Identity.Pages.Account
             {
                 var user = CreateUser();
 
-                // Preencher dados do Utilizador base
                 user.Nome = Input.Nome;
                 user.DataRegisto = DateTime.Now;
                 user.EstadoConta = "ativo";
@@ -115,7 +116,6 @@ namespace DCarMarketplace.Areas.Identity.Pages.Account
                 {
                     _logger.LogInformation("User created a new account with password.");
 
-                    // --- LÓGICA DE VENDEDOR VS COMPRADOR ---
                     if (Input.TipoConta == "Vendedor")
                     {
                         var vendedor = new Vendedor
@@ -125,7 +125,7 @@ namespace DCarMarketplace.Areas.Identity.Pages.Account
                             Morada = Input.Morada,
                             Contactos = Input.Contactos,
                             Tipo = "Particular",
-                            EstadoAprovacao = "pendente" // Fica pendente até Admin aprovar
+                            EstadoAprovacao = "pendente"
                         };
                         _context.Vendedores.Add(vendedor);
                         await _userManager.AddToRoleAsync(user, "Vendedor");
@@ -144,7 +144,6 @@ namespace DCarMarketplace.Areas.Identity.Pages.Account
 
                     await _context.SaveChangesAsync();
 
-                    // --- GERAÇÃO DE TOKEN DE EMAIL E REDIRECIONAMENTO ---
                     var userId = await _userManager.GetUserIdAsync(user);
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
@@ -154,14 +153,17 @@ namespace DCarMarketplace.Areas.Identity.Pages.Account
                         values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
                         protocol: Request.Scheme);
 
-                    // Se a confirmação for obrigatória (o que definimos no Program.cs), vai para a página de confirmação
+                    // --- 4. CHAMADA DO ENVIO DE EMAIL REAL ---
+                    // Isto envia a mensagem através da classe EmailSender que criaste na pasta Services
+                    await _emailSender.SendEmailAsync(Input.Email, "Confirme o seu e-mail",
+                        $"Por favor confirme a sua conta no DCar Marketplace <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicando aqui</a>.");
+
                     if (_userManager.Options.SignIn.RequireConfirmedAccount)
                     {
                         return RedirectToPage("RegisterConfirmation", new { email = Input.Email, returnUrl = returnUrl });
                     }
                     else
                     {
-                        // Se não for obrigatória, entra direto
                         await _signInManager.SignInAsync(user, isPersistent: false);
                         return LocalRedirect(returnUrl);
                     }
@@ -172,20 +174,13 @@ namespace DCarMarketplace.Areas.Identity.Pages.Account
                 }
             }
 
-            // Se falhar, volta a mostrar o formulário
             return Page();
         }
 
         private Utilizador CreateUser()
         {
-            try
-            {
-                return Activator.CreateInstance<Utilizador>();
-            }
-            catch
-            {
-                throw new InvalidOperationException($"Can't create an instance of '{nameof(Utilizador)}'.");
-            }
+            try { return Activator.CreateInstance<Utilizador>(); }
+            catch { throw new InvalidOperationException($"Can't create an instance of '{nameof(Utilizador)}'."); }
         }
 
         private IUserEmailStore<Utilizador> GetEmailStore()

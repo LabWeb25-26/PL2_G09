@@ -43,7 +43,7 @@ namespace DCarMarketplace.Models.ViewModels
         // --- VIN (CAMPO QUE FALTAVA) ---
         [Display(Name = "VIN (Nº de Quadro)")]
         [StringLength(17, MinimumLength = 17, ErrorMessage = "O VIN deve ter exatamente 17 caracteres.")]
-        [RegularExpression(@"^[A-HJ-NPR-Z0-9]{17}$",ErrorMessage = "VIN inválido. Não pode conter as letras I, O ou Q e deve ter 17 caracteres.")]
+        [RegularExpression(@"^[A-HJ-NPR-Z0-9]{17}$", ErrorMessage = "VIN inválido. Não pode conter as letras I, O ou Q e deve ter 17 caracteres.")]
         public string VIN { get; set; }
         // -------------------------------
 

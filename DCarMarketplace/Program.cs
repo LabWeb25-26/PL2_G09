@@ -1,6 +1,8 @@
 using DCarMarketplace.Data;
-using DCarMarketplace.Models; // <--- OBRIGAT�RIO: Para encontrar a classe Utilizador
+using DCarMarketplace.Models;
+using DCarMarketplace.Services; // <--- NOVO: Referência para a pasta Services
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services; // <--- NOVO: Interface de Email do Identity
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,15 +16,11 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-// 2. CONFIGURA��O DO IDENTITY (CORRIGIDA)
-// Mud�mos <IdentityUser> para <Utilizador>
-// Adicion�mos .AddRoles<IdentityRole>()
+// 2. CONFIGURAÇÃO DO IDENTITY
 builder.Services.AddDefaultIdentity<Utilizador>(options => {
-
-    // MUDAR ISTO PARA TRUE
+    // OBRIGATÓRIO PARA O TEU RELATÓRIO: Impede login sem confirmar email
     options.SignIn.RequireConfirmedAccount = true;
 
-    // (As outras opções de password podes manter como tinhas)
     options.Password.RequireDigit = false;
     options.Password.RequireLowercase = false;
     options.Password.RequireNonAlphanumeric = false;
@@ -32,12 +30,15 @@ builder.Services.AddDefaultIdentity<Utilizador>(options => {
 .AddRoles<IdentityRole>()
 .AddEntityFrameworkStores<ApplicationDbContext>();
 
+// 3. REGISTAR O SERVIÇO DE EMAIL
+// Isto diz ao Identity para usar a tua classe EmailSender sempre que precisar de enviar um código
+builder.Services.AddTransient<IEmailSender, EmailSender>();
+
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 
-// 3. BLOCO DE SEEDING (POVOAMENTO)
-// Este c�digo corre o DbInitializer para criar o Admin e as Marcas
+// 4. BLOCO DE SEEDING
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -47,7 +48,6 @@ using (var scope = app.Services.CreateScope())
         var userManager = services.GetRequiredService<UserManager<Utilizador>>();
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
 
-        // Chama a classe que criaste na pasta Data
         await DbInitializer.Initialize(context, userManager, roleManager);
     }
     catch (Exception ex)
@@ -57,7 +57,6 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// Configurar o pipeline HTTP
 if (app.Environment.IsDevelopment())
 {
     app.UseMigrationsEndPoint();
@@ -73,9 +72,8 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-// 4. ATIVAR AUTENTICA��O (Antes da Autoriza��o!)
-app.UseAuthentication(); // <--- OBRIGAT�RIO: "Quem �s tu?"
-app.UseAuthorization();  // <--- OBRIGAT�RIO: "O que podes fazer?"
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
