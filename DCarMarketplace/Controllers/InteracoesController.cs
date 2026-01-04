@@ -23,7 +23,7 @@ namespace DCarMarketplace.Controllers
             _context = context;
             _userManager = userManager;
         }
-
+                                                                                                                                                                                                                                                            
         // =============================================================
         // 1. RESERVAR VEÍCULO (RF-7)
         // =============================================================
@@ -96,7 +96,7 @@ namespace DCarMarketplace.Controllers
         public async Task<IActionResult> CancelarReserva(int id)
         {
             var user = await _userManager.GetUserAsync(User);
-
+                                                                     
             var reserva = await _context.Reservas
                 .Include(r => r.Anuncio)
                 .FirstOrDefaultAsync(r => r.Id == id);

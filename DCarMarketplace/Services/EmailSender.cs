@@ -12,7 +12,7 @@ namespace DCarMarketplace.Services
         {
             _configuration = configuration;
         }
-
+                                                                                                                                                                                                                                                                 
         public async Task SendEmailAsync(string email, string subject, string htmlMessage)
         {
             var host = _configuration["EmailSettings:Host"];

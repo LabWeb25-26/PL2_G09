@@ -12,7 +12,7 @@ namespace DCarMarketplace.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<Utilizador> _userManager;
-
+                                                                                                                                                            
         public FavoritosController(ApplicationDbContext context, UserManager<Utilizador> userManager)
         {
             _context = context;

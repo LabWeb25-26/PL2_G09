@@ -10,7 +10,7 @@ namespace DCarMarketplace.Models
 
         public int AnuncioId { get; set; }
         public string CompradorId { get; set; }
-
+                                                                    
         public DateTime Data { get; set; } = DateTime.Now;
 
         [Column(TypeName = "decimal(18,2)")]

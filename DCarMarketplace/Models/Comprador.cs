@@ -10,7 +10,7 @@ namespace DCarMarketplace.Models
 
         public string? Morada { get; set; }
         public string? Contactos { get; set; }
-
+                                                                                                                                                                                                                            
         public virtual Utilizador Utilizador { get; set; }
 
         // As várias interações do comprador

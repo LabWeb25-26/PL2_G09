@@ -15,7 +15,7 @@ namespace DCarMarketplace.Data
         public DbSet<Administrador> Administradores { get; set; }
         public DbSet<Vendedor> Vendedores { get; set; }
         public DbSet<Comprador> Compradores { get; set; }
-
+                                                                                                                                                                                          
         // --- 2. Tabelas de Domínio (Carros) ---
         public DbSet<Marca> Marcas { get; set; }
         public DbSet<Modelo> Modelos { get; set; }

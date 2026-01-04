@@ -10,8 +10,8 @@ namespace DCarMarketplace.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly ApplicationDbContext _context;
-
-        public HomeController(ILogger<HomeController> logger, ApplicationDbContext context)
+                                                                                                            
+        public HomeController(ILogger<HomeController> logger, ApplicationDbContext context)                      
         {
             _logger = logger;
             _context = context;

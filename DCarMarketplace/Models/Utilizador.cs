@@ -12,7 +12,7 @@ namespace DCarMarketplace.Models
 
         [Required]
         public string EstadoConta { get; set; } = "ativo"; // 'ativo', 'bloqueado'
-
+                                                                                                                                                       
         public DateTime DataRegisto { get; set; } = DateTime.Now;
 
         // Ligações aos Perfis (1 Utilizador pode ter 1 Vendedor e/ou 1 Comprador)

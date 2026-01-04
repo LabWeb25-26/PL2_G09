@@ -10,7 +10,7 @@ namespace DCarMarketplace.Models
 
         public string UtilizadorId { get; set; }
         public int AnuncioId { get; set; }
-
+                                                                       
         [ForeignKey("UtilizadorId")]
         public virtual Utilizador Utilizador { get; set; }
 

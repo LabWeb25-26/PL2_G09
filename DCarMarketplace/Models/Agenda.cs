@@ -10,7 +10,7 @@ namespace DCarMarketplace.Models
 
         public int AnuncioId { get; set; }
         public string CompradorId { get; set; }
-
+                                                                                                                                                                                                                                          
         public DateTime DataAgenda { get; set; } = DateTime.Now; // Quando foi marcado
         public DateTime DataVisita { get; set; } // Para quando é a visita
         public string Estado { get; set; } = "pendente"; // 'pendente', 'realizada', 'cancelada'

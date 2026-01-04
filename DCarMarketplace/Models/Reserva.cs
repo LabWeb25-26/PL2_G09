@@ -10,7 +10,7 @@ namespace DCarMarketplace.Models
 
         public int AnuncioId { get; set; }
         public string CompradorId { get; set; }
-
+                                                                                                                                                           
         public DateTime Data { get; set; } = DateTime.Now;
         public DateTime? PrazoExpiracao { get; set; }
         public string Estado { get; set; } // 'ativa', 'expirada', 'cancelada'

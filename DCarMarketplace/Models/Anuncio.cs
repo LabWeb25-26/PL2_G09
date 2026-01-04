@@ -13,7 +13,7 @@ namespace DCarMarketplace.Models
         public string VendedorId { get; set; }
         [Required]
         public int CarroId { get; set; }
-
+                                                                                                                                                                                           
         [Required]
         public string Titulo { get; set; }
         public string Descricao { get; set; }

@@ -15,7 +15,7 @@ namespace DCarMarketplace.Models
         [ForeignKey("AdminId")]
         // Voltamos a usar 'Administrador' para corrigir o erro de compilação
         public virtual Administrador Admin { get; set; }
-
+                                                                                                                                                         
         // --- ALVO (Pode ser um Utilizador OU um Anúncio) ---
         public string? AlvoUtilizadorId { get; set; }
 

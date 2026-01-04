@@ -41,7 +41,7 @@ namespace DCarMarketplace.Data
                     context.Administradores.Add(adminProfile);
                 }
             }
-
+                                                                                                                                                                                                         
             // 3. Criar Marcas (Se não existirem)
             if (!context.Marcas.Any())
             {

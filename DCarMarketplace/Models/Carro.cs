@@ -11,7 +11,7 @@ namespace DCarMarketplace.Models
         // --- DADOS DE IDENTIFICAÇÃO ---
         [StringLength(17)]
         public string? VIN { get; set; } // Opcional
-
+                                                                                                                                                                                                         
         [Required]
         [StringLength(20)]
         public string Matricula { get; set; }

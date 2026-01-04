@@ -7,7 +7,7 @@ namespace DCarMarketplace.Models
     public class Administrador{
     [Key, ForeignKey("Utilizador")]
     public string Id { get; set; }
-
+                                                                                                                                                             
     public virtual Utilizador Utilizador { get; set; }
 
     // Auditoria: Ações que este administrador executou

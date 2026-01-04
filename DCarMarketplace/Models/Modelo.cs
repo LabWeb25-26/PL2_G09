@@ -10,7 +10,7 @@ namespace DCarMarketplace.Models
 
         [Required]
         public int MarcaId { get; set; }
-
+                                                                                                                                                                                                                                                                                                
         [Required]
         [StringLength(100)]
         public string Nome { get; set; }

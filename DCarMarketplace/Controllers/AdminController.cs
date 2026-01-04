@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using System.Linq;
 using System.Collections.Generic;
 using System.Globalization; // Necessário para a formatação de texto
-
+                                                                                                                                                                                                                                                                                                   
 namespace DCarMarketplace.Controllers
 {
     [Authorize(Roles = "Administrador")]

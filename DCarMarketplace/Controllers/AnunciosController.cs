@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using System.IO;
-
+                                                                                                                                                                                                                                                                                           
 namespace DCarMarketplace.Controllers
 {
     public class AnunciosController : Controller
