@@ -180,7 +180,7 @@ namespace DCarMarketplace.Controllers
 
             foreach (var r in reservasAtivas)
             {
-                r.Estado = "concluida"; // Marca como terminada porque foi comprado
+                r.Estado = "cancelada"; // Marca como terminada porque foi comprado
             }
 
             _context.Compras.Add(compra);
